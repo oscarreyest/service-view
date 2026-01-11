@@ -1,0 +1,1747 @@
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Song Chart Editor - IB Nueva Esperanza RVA(Option 2)</title>
+<style>
+  :root{
+    /* Base palette */
+    --page-bg:#f7f8fa; --card-bg:#ffffff; --muted:#6b7280; --accent:#1f6feb;
+
+    /* Screen tints for sections */
+    --generic-bg:#f8f9fa;
+    --verse-bg:#f3fdf3;
+    --prechorus-bg:#fff4e0;  /* soft orange tint */
+    --prechorus-ac:#ffb74d;  /* matches your solo-ac / similar warm tone */
+    --chorus-bg:#eef6ff;
+    --bridge-bg:#fffbea;
+    --intro-bg:#f9f5ff;
+    --interlude-bg:#faf5ff;
+    --outro-bg:#f8f5f9;
+    --medley-bg:#f9f5ff;
+    --instrumental-bg:#f3fdfd;
+    --solo-bg:#fff8f0;
+
+    /* Accents for badges/lines */
+    --generic-ac:#cfd8dc;
+    --verse-ac:#81c784;
+    --chorus-ac:#64b5f6;
+    --bridge-ac:#f6d860;
+    --intro-ac:#b39ddb;
+    --interlude-ac:#ce93d8;
+    --outro-ac:#b39ddb;
+    --medley-ac:#ba68c8;
+    --instrumental-ac:#4db6ac;
+    --solo-ac:#ffb74d;
+
+    /* Typography (auto-scaled) */
+    --lyric-size:16px; --chord-size:17px; --pre-line:1.6;
+    --section-title:16px; --meta-size:14px; --badge-font:12px;
+    --title-size:32px; --subtitle-size:18px;
+
+    /* Layout */
+    --viewer-pad:24px; --column-gap:8mm; --header-gap:10px; --pre-margin:8px;
+  }
+
+  html,body{height:100%;margin:0;background:var(--page-bg);
+    font-family:Georgia,"Times New Roman",serif;color:#111}
+  .wrap{max-width:900px;margin:28px auto;padding:18px}
+  header h1{margin:0 0 4px 0;font-size:28px;font-weight:800}
+  header p{margin:0 0 18px 0;color:var(--muted);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+
+  .card{background:var(--card-bg);border-radius:12px;padding:16px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);margin-bottom:14px}
+  textarea#source{width:100%;min-height:200px;border-radius:8px;padding:14px;
+    border:1px solid #e1e4ea;font-family:monospace;font-size:14px;line-height:1.4}
+
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .btn{padding:8px 14px;border-radius:8px;cursor:pointer;font-family:system-ui;
+    border:1px solid var(--accent);background:#fff;color:var(--accent)}
+  .btn.primary{background:var(--accent);color:#fff}
+  .controls .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  select#keySelect{padding:8px;border-radius:8px;border:1px solid #bfc6d9;font-weight:600}
+
+  .viewer{background:#fff;border-radius:12px;padding:var(--viewer-pad);
+    box-shadow:0 2px 6px rgba(0,0,0,.06)}
+  .title{font-size:var(--title-size);font-weight:800;margin:0 0 4px 0}
+  .subtitle{font-size:var(--subtitle-size);font-style:italic;color:var(--muted);
+    margin:0 0 6px 0}
+  .meta-row{font-size:var(--meta-size);color:var(--muted);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+
+  .header-box{border:1px solid #dce2ea;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .viewer > .header-box{-webkit-column-span:all;column-span:all;width:100%;box-sizing:border-box}
+  .header-content{text-align:center}
+  .header-badges{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;
+    gap:10px;margin-top:var(--header-gap)}
+  .header-badge{min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+    font-size:var(--badge-font);font-weight:800;border-radius:50%;border:2px solid var(--generic-ac);
+    background:#fff;color:#111;padding:0 6px}
+  .header-badge.type-verse{border-color:var(--verse-ac)}
+  .header-badge.type-prechorus{border-color:#ffb74d}
+  .header-badge.type-chorus{border-color:var(--chorus-ac)}
+  .header-badge.type-bridge{border-color:var(--bridge-ac)}
+  .header-badge.type-intro{border-color:var(--intro-ac)}
+  .header-badge.type-interlude{border-color:var(--interlude-ac)}
+  .header-badge.type-outro{border-color:var(--outro-ac)}
+  .header-badge.type-medley{border-color:var(--medley-ac)}
+  .header-badge.type-instrumental{border-color:var(--instrumental-ac)}
+  .header-badge.type-solo{border-color:var(--solo-ac)}
+  .header-badge.type-generic{border-color:var(--generic-ac)}
+
+  .section-box {
+  margin:12px 0!important;
+  border-radius:12px;
+  border:1px solid #dce2ea;
+  background:var(--generic-bg);
+}
+
+/* 🔧 Ensure uniform vertical spacing between all section boxes */
+.section-box + .section-box {
+  margin-top: 14px !important;  /* space before every new section */
+}
+.section-box:last-of-type {
+  margin-bottom: 8px !important;  /* space after the final section */
+}
+
+.section-box.verse {background:var(--verse-bg);}
+.section-box.chorus {background:var(--chorus-bg);}
+.section-box.bridge {background:var(--bridge-bg);}
+
+  .section-box.intro{background:var(--intro-bg)}
+  .section-box.interlude{background:var(--interlude-bg)}
+  .section-box.outro{background:var(--outro-bg)}
+  .section-box.medley{background:var(--medley-bg)}
+  .section-box.instrumental{background:var(--instrumental-bg)}
+  .section-box.solo{background:var(--solo-bg)}
+.section-box.prechorus {background:var(--prechorus-bg);}
+
+/* VERSE */
+.section-box.verse .section-line,
+.section-box.verse .section-badge {
+  border-color: var(--verse-ac);
+}
+
+/* CHORUS */
+.section-box.chorus .section-line,
+.section-box.chorus .section-badge {
+  border-color: var(--chorus-ac);
+}
+
+/* BRIDGE */
+.section-box.bridge .section-line,
+.section-box.bridge .section-badge {
+  border-color: var(--bridge-ac);
+}
+
+/* INTRO */
+.section-box.intro .section-line,
+.section-box.intro .section-badge {
+  border-color: var(--intro-ac);
+}
+
+/* INTERLUDE */
+.section-box.interlude .section-line,
+.section-box.interlude .section-badge {
+  border-color: var(--interlude-ac);
+}
+
+/* OUTRO */
+.section-box.outro .section-line,
+.section-box.outro .section-badge {
+  border-color: var(--outro-ac);
+}
+
+/* MEDLEY */
+.section-box.medley .section-line,
+.section-box.medley .section-badge {
+  border-color: var(--medley-ac);
+}
+
+/* INSTRUMENTAL */
+.section-box.instrumental .section-line,
+.section-box.instrumental .section-badge {
+  border-color: var(--instrumental-ac);
+}
+
+/* SOLO */
+.section-box.solo .section-line,
+.section-box.solo .section-badge {
+  border-color: var(--solo-ac);
+}
+
+/* PRECHORUS (new – add this) */
+.section-box.prechorus .section-line,
+.section-box.prechorus .section-badge {
+  border-color: var(--prechorus-ac);
+}
+
+  .section-head{position:relative;padding:18px 16px 4px 16px}
+  .section-title{margin:8px 0 0 0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    font-weight:700;color:#1f6feb;font-size:var(--section-title)}
+  .section-badge{position:absolute;top:-14px;left:16px;min-width:26px;height:26px;border-radius:50%;
+    background:#fff;border:2px solid var(--generic-ac);font-size:var(--badge-font);font-weight:800;
+    display:flex;align-items:center;justify-content:center}
+/* 🩹 Adjust badge for screen view */
+.section-badge {
+  top: -10px !important;
+}
+  .section-line{position:absolute;top:0;left:52px;right:16px;height:2px;background:var(--generic-ac);border-radius:3px}
+  .section-box.verse .section-line,.section-box.verse .section-badge{border-color:var(--verse-ac)}
+  .section-box.chorus .section-line,.section-box.chorus .section-badge{border-color:var(--chorus-ac)}
+  .section-box.bridge .section-line,.section-box.bridge .section-badge{border-color:var(--bridge-ac)}
+  .section-box.intro .section-line,.section-box.intro .section-badge{border-color:var(--intro-ac)}
+  .section-box.interlude .section-line,.section-box.interlude .section-badge{border-color:var(--interlude-ac)}
+  .section-box.outro .section-line,.section-box.outro .section-badge{border-color:var(--outro-ac)}
+  .section-box.medley .section-line,.section-box.medley .section-badge{border-color:var(--medley-ac)}
+  .section-box.instrumental .section-line,.section-box.instrumental .section-badge{border-color:var(--instrumental-ac)}
+  .section-box.solo .section-line,.section-box.solo .section-badge{border-color:var(--solo-ac)}
+
+  pre{font-family:"Courier New",Courier,monospace;white-space:pre;font-size:var(--lyric-size);
+    line-height:1.25!important;margin:2px 0!important;padding:2px 0!important;
+    background:transparent!important;border:none!important}
+  .chord-strong{font-weight:700;font-size:var(--chord-size)}
+
+  .viewer.two-col{column-count:2;column-gap:var(--column-gap);column-fill:auto}
+  .comment{color:var(--muted);font-style:italic;margin:6px 0;padding-left:6px;border-left:2px solid #f0f0f0}
+  .comment.box{border-left:4px solid #ccc;background:#f8f8f8;padding:8px;border-radius:6px;font-style:normal;color:#333}
+  footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+
+/* Restore inner spacing for section bodies */
+.section-body {
+  padding: 0 16px 8px 16px !important;
+}
+
+@media print{
+  body{margin:12mm;background:#fff}
+  .controls,.no-print{display:none!important}
+  .viewer{box-shadow:none;padding:0}
+  @page{size:Letter;margin:12mm}
+  pre{line-height:1.25!important}
+}
+
+ @media print{
+  body{margin:12mm;background:#fff}
+  .controls,.no-print{display:none!important}
+  .viewer{box-shadow:none;padding:0}
+  @page{size:Letter;margin:12mm}
+  pre{line-height:1.25!important}
+
+  /* Add extra space between columns in print mode */
+  .viewer.two-col {
+    column-gap:8mm !important;
+  }
+  /* 🔧 Fix badge clipping and offset in print preview */
+  .section-badge {
+    top: -10px !important;
+    transform: translateY(0) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure badges aren't cut off by section container */
+  .section-head {
+    overflow: visible !important;
+  }
+
+    /* Allow Chrome to break sections if needed to avoid large gaps */
+  .section-box {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+}
+/* View-only mode (when using shared link) */
+body.view-only {
+  background:#fff;
+}
+
+/* View-only mode — hide editor UI only */
+body.view-only header,
+body.view-only footer {
+  display: none !important;
+}
+
+body.view-only .editor-only {
+  display: none !important;
+}
+
+  /* 👁 Viewer mode — hide edit/share actions */
+body.view-only #render,
+body.view-only #downloadCho,
+body.view-only #shareLink,
+body.view-only #shareViewerBtn {
+  display: none !important;
+}
+
+/* Ensure output stays visible */
+body.view-only #outputArea {
+  display: block !important;
+  box-shadow: none;
+  padding: 24px;
+  border-radius: 0;
+}
+/* 👁 FINAL FIX — anchor viewer output so it cannot collapse */
+body.view-only .wrap {
+  margin-top: 0 !important;
+}
+
+body.view-only #outputArea {
+  margin-top: 0 !important;
+}
+/* 👁 Optional — visual clarity for viewer mode */
+body.view-only #outputArea.viewer {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* 👁 Viewer mode — re-enable interactive controls */
+body.view-only .controls {
+  display: flex !important;
+  margin-bottom: 12px;
+}
+
+body.view-only .controls .editor-only {
+  display: none !important;
+}
+  
+body.view-only #outputArea {
+  box-shadow:none;
+  padding:24px;
+  border-radius:0;
+}
+.chord-legend {
+  border:1px solid #dce2ea;
+  border-radius:12px;
+  background:#fff;
+  text-align:center;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+/* 🎸 Optional visual enhancement for chord legend */
+.chord-legend h3 {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+/* 📱 Mobile / Tablet Layout Adjustments */
+@media (max-width: 820px) {
+  .viewer {
+    column-count: 1 !important;
+    padding: 12px !important;
+  }
+
+  .section-box {
+    margin: 10px 0 !important;
+  }
+
+  .section-head {
+    padding: 12px 12px 4px 12px !important;
+  }
+
+  .section-title {
+    font-size: 15px !important;
+  }
+
+  pre {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+  }
+
+  .header-box {
+    padding: 12px 10px !important;
+  }
+
+  .header-badges {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .header-badge {
+    min-width: 22px !important;
+    height: 22px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Optional — better badge behavior on small phones */
+@media (max-width: 480px) {
+  .header-badges {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+}
+
+</style>
+</head>
+<body class="view-only">
+  <div class="wrap">
+    <header>
+      <h1>Song Chart Editor</h1>
+      <p>Usa el siguiente ejemplo como referencia para crear nuevos charts.</p>
+    </header>
+
+    <div class="card editor-only" style="display: none;">
+      <label for="source" style="display:block;font-weight:600;margin-bottom:8px">
+        ChordPro source
+      </label>
+
+      <textarea id="source">{start_header}
+{title: Sample Song}
+{subtitle: Versión IB Nueva Esperanza RVA}
+{artist: Demo Band}
+{key: C}
+{time: 4/4}
+{tempo: 60}
+{capo: 0}
+{comment_box: Key changed to: [C]}
+{section_list: I, V1, C, B, Inst, S, O}
+{end_header}
+
+{comment: Intro}
+[C]    [F]    [C]    [G]
+
+{comment: Verse 1}
+[C] This is the [F] verse that tells a [C] story  
+And leads us [G] right along the way
+
+{comment: Verse 2}
+[C] Every [Am] word is here to [F] show  
+[G] The ChordPro [C] display
+
+{start_of_chorus}
+[F] Sing out loud, let your [C] heart rejoice  
+[G] Every chord and [Am] every voice
+{end_of_chorus}
+
+{start_of_bridge}
+[C]    [F]    [G]    [C]
+{end_of_bridge}
+        
+{start_of_instrumental}
+[C]    [F]    [G]    [C]
+{end_of_instrumental}
+
+{start_of_solo}
+[C] Guitar [Am] Solo [F] [G]
+{end_of_solo}
+
+{comment: Outro}
+[C]     [F]     [C]     [G]     [C]
+</textarea>
+    </div>
+
+          <div class="controls no-print">
+        <button id="render" class="btn primary">Render</button>
+        <button id="downloadCho" class="btn editor-only" style="display: none;">Download .cho</button>
+        <button id="shareLink" class="btn">Share Link</button>
+        <button id="shareViewerBtn">Share Viewer Link</button>
+        <button id="exportPdf" class="btn">Export PDF / Print</button>
+<label style="font-weight:600;margin-left:8px;">
+       <input type="checkbox" id="showChordsToggle" style="margin-right:4px;">
+      Show Chords
+</label>
+<label style="font-weight:600;margin-left:10px;">
+  View:
+  <select id="chordViewSelect" style="margin-left:4px;padding:4px;border-radius:6px;border:1px solid #ccc;">
+    <option value="guitar" selected="">Guitar</option>
+    <option value="keyboard">Keyboard</option>
+    <option value="both">Both</option>
+  </select>
+</label>
+        <div class="right">
+<label for="capoSelect" style="font-weight:600;margin-right:6px;color:#333">Capo:</label>
+<select id="capoSelect" aria-label="Set capo fret" title="Set capo fret">
+  <option value="0">0</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+  <option value="6">6</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="9">9</option>
+  <option value="10">10</option>
+  <option value="11">11</option>
+  <option value="12">12</option>
+</select>
+
+          <label for="keySelect" style="font-weight:600;margin-right:6px;color:#333">Select Key:</label>
+          <select id="keySelect" aria-label="Transpose to key" title="Transpose to key"><option value="">(original)</option><option value="C">C</option><option value="C#">C#</option><option value="D">D</option><option value="D#">D#</option><option value="E">E</option><option value="F">F</option><option value="F#">F#</option><option value="G">G</option><option value="G#">G#</option><option value="A">A</option><option value="A#">A#</option><option value="B">B</option><option disabled="">── minor keys ──</option><option value="Cm">Cm</option><option value="C#m">C#m</option><option value="Dm">Dm</option><option value="D#m">D#m</option><option value="Em">Em</option><option value="Fm">Fm</option><option value="F#m">F#m</option><option value="Gm">Gm</option><option value="G#m">G#m</option><option value="Am">Am</option><option value="A#m">A#m</option><option value="Bm">Bm</option></select>
+        </div>
+      </div>
+    
+    <div id="outputArea" class="viewer card two-col" aria-live="polite" style="--lyric-size: 13px; --chord-size: 14px; --pre-line: 1.46; --section-title: 14px; --meta-size: 12px; --badge-font: 11px; --title-size: 26px; --subtitle-size: 16px; --viewer-pad: 12px;"><div class="header-box"><div class="header-content"><div><div class="title">Bienvenido Espíritu Santo</div></div><div><div class="subtitle">Version IB Nueva Esperanza RVA</div></div><div><div class="meta-row">Artist: Miel san Marcos feat. Marco Barrientos</div></div><div class="meta-row">Key: C | Time: 4/4 | Tempo: 98 | Capo: 0</div><div><div style="display:inline-block;border:1px solid #d4d8e0;
+            border-radius:8px;padding:6px 10px;margin:6px 0;background:#fafafa">Key changed to: [C]</div></div></div><div class="header-badges"><span class="header-badge type-intro">I</span><span class="header-badge type-verse">V</span><span class="header-badge type-verse">V</span><span class="header-badge type-chorus">C</span><span class="header-badge type-chorus">C</span><span class="header-badge type-bridge">B</span><span class="header-badge type-verse">V</span><span class="header-badge type-chorus">C</span><span class="header-badge type-chorus">C</span><span class="header-badge type-outro">O</span></div></div><div class="section-box intro"><div class="section-head"><div class="section-line"></div><div class="section-badge">I</div><div class="section-title">Intro</div></div><div class="section-body"><pre><span class="chord-strong">C</span>   <span class="chord-strong">C</span>   <span class="chord-strong">F</span>   <span class="chord-strong">F</span>   <span class="chord-strong">Am</span>   <span class="chord-strong">C</span>   <span class="chord-strong">F</span>
+                         </pre></div></div><div class="section-box verse"><div class="section-head"><div class="section-line"></div><div class="section-badge">V</div><div class="section-title">Verse</div></div><div class="section-body"><pre>          <span class="chord-strong">C</span>
+Espíritu Santo</pre><pre>             <span class="chord-strong">F</span>
+Bienvenido a éste lugar</pre><pre>      <span class="chord-strong">G</span>
+Jesucristo,</pre><pre>             <span class="chord-strong">F</span>       <span class="chord-strong">C</span>
+Bienvenido a éste lugar</pre><pre>                      <span class="chord-strong">F</span>
+Padre omnipotente de gracia y amor</pre><div class="comment box">Para repetir VERSE</div><pre>      <span class="chord-strong">G</span>              <span class="chord-strong">C</span>    <span class="chord-strong">F</span>
+Bienvenido a éste lugar   </pre><div class="comment box">Para pasar a CHORUS</div><pre>      <span class="chord-strong">G</span>              <span class="chord-strong">C</span>    <span class="chord-strong">C</span>
+Bienvenido a éste lugar   </pre></div></div><div class="section-box chorus"><div class="section-head"><div class="section-line"></div><div class="section-badge">C</div><div class="section-title">Chorus</div></div><div class="section-body"><pre>       <span class="chord-strong">C</span>
+Bienvenido Espíritu de Dios</pre><pre>       <span class="chord-strong">Am</span>
+Damos gloria solo a Tí, Señor</pre><pre>       <span class="chord-strong">G</span>
+Bienvenido Espíritu de Dios</pre><pre>       <span class="chord-strong">Dm</span>                    <span class="chord-strong">G</span>
+Hoy rendimos coronas a Tus pies</pre></div></div><div class="section-box bridge"><div class="section-head"><div class="section-line"></div><div class="section-badge">B</div><div class="section-title">Bridge</div></div><div class="section-body"><div class="comment" style="font-style:italic">SOLO de Guitarra</div><pre><span class="chord-strong">C-</span><span class="chord-strong">C-</span><span class="chord-strong">F</span>   <span class="chord-strong">G-</span><span class="chord-strong">G-</span><span class="chord-strong">Am</span>
+          </pre><pre><span class="chord-strong">C-</span><span class="chord-strong">C-</span><span class="chord-strong">F</span>   <span class="chord-strong">G-</span><span class="chord-strong">G-</span><span class="chord-strong">Am-</span><span class="chord-strong">G</span>
+           </pre></div></div><div class="section-box outro"><div class="section-head"><div class="section-line"></div><div class="section-badge">O</div><div class="section-title">Outro</div></div><div class="section-body"><div class="comment" style="font-style:italic">Igual que la Intro con SOLO de Guitarra</div><pre><span class="chord-strong">C</span>   <span class="chord-strong">C</span>   <span class="chord-strong">F</span>   <span class="chord-strong">F</span>   <span class="chord-strong">Am</span>   <span class="chord-strong">C</span>   <span class="chord-strong">F</span>
+                         </pre></div></div></div>
+<div id="chordLegend" class="card" style="display: block; margin-top: 12px; padding: 12px;"><h3>Chord Legend (Guitar + Keyboard)</h3><div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:10px;"><div><svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="80" fill="#fff"></rect><line x1="10" y1="20" x2="10" y2="70" stroke="#555" stroke-width="1"></line><line x1="18" y1="20" x2="18" y2="70" stroke="#555" stroke-width="1"></line><line x1="26" y1="20" x2="26" y2="70" stroke="#555" stroke-width="1"></line><line x1="34" y1="20" x2="34" y2="70" stroke="#555" stroke-width="1"></line><line x1="42" y1="20" x2="42" y2="70" stroke="#555" stroke-width="1"></line><line x1="50" y1="20" x2="50" y2="70" stroke="#555" stroke-width="1"></line><line x1="10" y1="20" x2="50" y2="20" stroke="#000" stroke-width="3"></line><line x1="10" y1="30" x2="50" y2="30" stroke="#555" stroke-width="1"></line><line x1="10" y1="40" x2="50" y2="40" stroke="#555" stroke-width="1"></line><line x1="10" y1="50" x2="50" y2="50" stroke="#555" stroke-width="1"></line><line x1="10" y1="60" x2="50" y2="60" stroke="#555" stroke-width="1"></line><line x1="10" y1="70" x2="50" y2="70" stroke="#555" stroke-width="1"></line><text x="10" y="15" font-size="6" text-anchor="middle">x</text><circle cx="18" cy="45" r="3" fill="#333"></circle><circle cx="26" cy="35" r="3" fill="#333"></circle><circle cx="34" cy="15" r="2" fill="#fff" stroke="#333"></circle><circle cx="42" cy="25" r="3" fill="#333"></circle><circle cx="50" cy="15" r="2" fill="#fff" stroke="#333"></circle><text x="30" y="78" font-size="8" text-anchor="middle">C</text></svg></div><div><svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="80" fill="#fff"></rect><line x1="10" y1="20" x2="10" y2="70" stroke="#555" stroke-width="1"></line><line x1="18" y1="20" x2="18" y2="70" stroke="#555" stroke-width="1"></line><line x1="26" y1="20" x2="26" y2="70" stroke="#555" stroke-width="1"></line><line x1="34" y1="20" x2="34" y2="70" stroke="#555" stroke-width="1"></line><line x1="42" y1="20" x2="42" y2="70" stroke="#555" stroke-width="1"></line><line x1="50" y1="20" x2="50" y2="70" stroke="#555" stroke-width="1"></line><line x1="10" y1="20" x2="50" y2="20" stroke="#000" stroke-width="3"></line><line x1="10" y1="30" x2="50" y2="30" stroke="#555" stroke-width="1"></line><line x1="10" y1="40" x2="50" y2="40" stroke="#555" stroke-width="1"></line><line x1="10" y1="50" x2="50" y2="50" stroke="#555" stroke-width="1"></line><line x1="10" y1="60" x2="50" y2="60" stroke="#555" stroke-width="1"></line><line x1="10" y1="70" x2="50" y2="70" stroke="#555" stroke-width="1"></line><circle cx="10" cy="25" r="3" fill="#333"></circle><circle cx="18" cy="45" r="3" fill="#333"></circle><circle cx="26" cy="45" r="3" fill="#333"></circle><circle cx="34" cy="35" r="3" fill="#333"></circle><circle cx="42" cy="25" r="3" fill="#333"></circle><circle cx="50" cy="25" r="3" fill="#333"></circle><text x="30" y="78" font-size="8" text-anchor="middle">F</text></svg></div><div><svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="80" fill="#fff"></rect><line x1="10" y1="20" x2="10" y2="70" stroke="#555" stroke-width="1"></line><line x1="18" y1="20" x2="18" y2="70" stroke="#555" stroke-width="1"></line><line x1="26" y1="20" x2="26" y2="70" stroke="#555" stroke-width="1"></line><line x1="34" y1="20" x2="34" y2="70" stroke="#555" stroke-width="1"></line><line x1="42" y1="20" x2="42" y2="70" stroke="#555" stroke-width="1"></line><line x1="50" y1="20" x2="50" y2="70" stroke="#555" stroke-width="1"></line><line x1="10" y1="20" x2="50" y2="20" stroke="#000" stroke-width="3"></line><line x1="10" y1="30" x2="50" y2="30" stroke="#555" stroke-width="1"></line><line x1="10" y1="40" x2="50" y2="40" stroke="#555" stroke-width="1"></line><line x1="10" y1="50" x2="50" y2="50" stroke="#555" stroke-width="1"></line><line x1="10" y1="60" x2="50" y2="60" stroke="#555" stroke-width="1"></line><line x1="10" y1="70" x2="50" y2="70" stroke="#555" stroke-width="1"></line><text x="10" y="15" font-size="6" text-anchor="middle">x</text><circle cx="18" cy="15" r="2" fill="#fff" stroke="#333"></circle><circle cx="26" cy="35" r="3" fill="#333"></circle><circle cx="34" cy="35" r="3" fill="#333"></circle><circle cx="42" cy="25" r="3" fill="#333"></circle><circle cx="50" cy="15" r="2" fill="#fff" stroke="#333"></circle><text x="30" y="78" font-size="8" text-anchor="middle">Am</text></svg></div><div><svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="80" fill="#fff"></rect><line x1="10" y1="20" x2="10" y2="70" stroke="#555" stroke-width="1"></line><line x1="18" y1="20" x2="18" y2="70" stroke="#555" stroke-width="1"></line><line x1="26" y1="20" x2="26" y2="70" stroke="#555" stroke-width="1"></line><line x1="34" y1="20" x2="34" y2="70" stroke="#555" stroke-width="1"></line><line x1="42" y1="20" x2="42" y2="70" stroke="#555" stroke-width="1"></line><line x1="50" y1="20" x2="50" y2="70" stroke="#555" stroke-width="1"></line><line x1="10" y1="20" x2="50" y2="20" stroke="#000" stroke-width="3"></line><line x1="10" y1="30" x2="50" y2="30" stroke="#555" stroke-width="1"></line><line x1="10" y1="40" x2="50" y2="40" stroke="#555" stroke-width="1"></line><line x1="10" y1="50" x2="50" y2="50" stroke="#555" stroke-width="1"></line><line x1="10" y1="60" x2="50" y2="60" stroke="#555" stroke-width="1"></line><line x1="10" y1="70" x2="50" y2="70" stroke="#555" stroke-width="1"></line><circle cx="10" cy="45" r="3" fill="#333"></circle><circle cx="18" cy="35" r="3" fill="#333"></circle><circle cx="26" cy="15" r="2" fill="#fff" stroke="#333"></circle><circle cx="34" cy="15" r="2" fill="#fff" stroke="#333"></circle><circle cx="42" cy="15" r="2" fill="#fff" stroke="#333"></circle><circle cx="50" cy="45" r="3" fill="#333"></circle><text x="30" y="78" font-size="8" text-anchor="middle">G</text></svg></div><div><svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="80" fill="#fff"></rect><line x1="10" y1="20" x2="10" y2="70" stroke="#555" stroke-width="1"></line><line x1="18" y1="20" x2="18" y2="70" stroke="#555" stroke-width="1"></line><line x1="26" y1="20" x2="26" y2="70" stroke="#555" stroke-width="1"></line><line x1="34" y1="20" x2="34" y2="70" stroke="#555" stroke-width="1"></line><line x1="42" y1="20" x2="42" y2="70" stroke="#555" stroke-width="1"></line><line x1="50" y1="20" x2="50" y2="70" stroke="#555" stroke-width="1"></line><line x1="10" y1="20" x2="50" y2="20" stroke="#000" stroke-width="3"></line><line x1="10" y1="30" x2="50" y2="30" stroke="#555" stroke-width="1"></line><line x1="10" y1="40" x2="50" y2="40" stroke="#555" stroke-width="1"></line><line x1="10" y1="50" x2="50" y2="50" stroke="#555" stroke-width="1"></line><line x1="10" y1="60" x2="50" y2="60" stroke="#555" stroke-width="1"></line><line x1="10" y1="70" x2="50" y2="70" stroke="#555" stroke-width="1"></line><text x="10" y="15" font-size="6" text-anchor="middle">x</text><text x="18" y="15" font-size="6" text-anchor="middle">x</text><circle cx="26" cy="15" r="2" fill="#fff" stroke="#333"></circle><circle cx="34" cy="35" r="3" fill="#333"></circle><circle cx="42" cy="45" r="3" fill="#333"></circle><circle cx="50" cy="25" r="3" fill="#333"></circle><text x="30" y="78" font-size="8" text-anchor="middle">Dm</text></svg></div></div><div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;border-top:1px solid #ddd;padding-top:10px;"><div><svg width="120" height="50" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="102.85714285714286" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="0" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="6.857142857142858" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="24" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="58.28571428571429" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="75.42857142857143" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="92.57142857142857" y="0" width="8.571428571428571" height="30" fill="#000"></rect><text x="60" y="47" font-size="8" fill="#111" text-anchor="middle">C</text></svg></div><div><svg width="120" height="50" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="102.85714285714286" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="0" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="6.857142857142858" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="24" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="58.28571428571429" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="75.42857142857143" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="92.57142857142857" y="0" width="8.571428571428571" height="30" fill="#000"></rect><text x="60" y="47" font-size="8" fill="#111" text-anchor="middle">F</text></svg></div><div><svg width="120" height="50" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="102.85714285714286" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="0" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="6.857142857142858" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="24" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="58.28571428571429" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="75.42857142857143" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="92.57142857142857" y="0" width="8.571428571428571" height="30" fill="#000"></rect><text x="60" y="47" font-size="8" fill="#111" text-anchor="middle">Am</text></svg></div><div><svg width="120" height="50" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="102.85714285714286" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="102.85714285714286" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="6.857142857142858" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="24" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="58.28571428571429" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="75.42857142857143" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="92.57142857142857" y="0" width="8.571428571428571" height="30" fill="#000"></rect><text x="60" y="47" font-size="8" fill="#111" text-anchor="middle">G</text></svg></div><div><svg width="120" height="50" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="34.285714285714285" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="68.57142857142857" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="102.85714285714286" y="0" width="17.142857142857142" height="50" fill="#fff" stroke="#000"></rect><rect x="17.142857142857142" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="51.42857142857143" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="85.71428571428571" y="0" width="17.142857142857142" height="50" fill="#88c" opacity="0.4"></rect><rect x="6.857142857142858" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="24" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="58.28571428571429" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="75.42857142857143" y="0" width="8.571428571428571" height="30" fill="#000"></rect><rect x="92.57142857142857" y="0" width="8.571428571428571" height="30" fill="#000"></rect><text x="60" y="47" font-size="8" fill="#111" text-anchor="middle">Dm</text></svg></div></div></div>
+
+    <footer>
+      Song Chart Creator - Propiedad del Worship Team De la Iglesia Bautista Nueva Esperanza - Richmond, VA
+    </footer>
+  </div>
+<!-- ✅ Load LZString from official CDN -->
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+<script>
+/* ================== Utilities ================== */
+const MAJOR_KEYS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT_EQ={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
+let transposeSteps=0,songOriginalKey=null;
+
+const esc=s=>(s??'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* Transpose */
+function transposeChordToken(token,steps){
+  const [main,bass]=token.split('/');
+  const tr=ch=>{
+    const m=ch.match(/^([A-G])([#b])?(.*)$/); if(!m) return ch;
+    let[,r,a,rest]=m; let full=r+(a||''); if(FLAT_EQ[full]) full=FLAT_EQ[full];
+    let i=NOTES.indexOf(full); if(i===-1) return ch;
+    let ni=(i+steps)%12; if(ni<0) ni+=12;
+    return NOTES[ni]+(rest||'');
+  };
+  return bass? tr(main)+'/'+tr(bass) : tr(main);
+}
+function applyTransposeToText(text,steps){
+  return text.replace(/\[([^\]]+)\]/g,(_,ch)=>'['+ch.split(/\s+/).filter(Boolean).map(t=>transposeChordToken(t,steps)).join(' ')+']');
+}
+
+/* Two-row renderer */
+function renderLineTwoRow(l){
+  let lyric='',segs=[],acc='',inch=false,len=0;
+  for(let i=0;i<l.length;i++){
+    const ch=l[i];
+    if(ch==='['){inch=true;acc='';}
+    else if(ch===']'){
+      inch=false; const pad=lyric.length-len; if(pad>0) segs.push({t:'s',l:pad});
+      segs.push({t:'c',x:acc}); len+=(pad>0?pad:0)+acc.length;
+    }else if(inch){acc+=ch;} else {lyric+=ch;}
+  }
+  let out=''; for(const s of segs){out += s.t==='s' ? ' '.repeat(s.l) : `<span class="chord-strong">${esc(s.x)}</span>`;}
+  if(out.trim()) return `<pre>${out}\n${esc(lyric)}</pre>`;
+  if(lyric.trim()) return `<pre>${esc(lyric)}</pre>`;
+  return '<div style="height:8px"></div>';
+}
+
+/* Section type + badges */
+function classifySection(labelGuess, tokenType = null) {
+  const t = (labelGuess || '').trim().toLowerCase();
+  const numMatch = t.match(/(\d+)/);
+  const num = numMatch ? ` ${numMatch[1]}` : '';
+
+  // English + Spanish mappings
+  const map = {
+    verse: 'Verse',
+    verso: 'Verso',
+    estrofa: 'Verso',
+    prechorus: 'Pre-Chorus',
+    precoro: 'Pre-Coro',
+    chorus: 'Chorus',
+    coro: 'Coro',
+    bridge: 'Bridge',
+    puente: 'Puente',
+    intro: 'Intro',
+    interlude: 'Interlude',
+    interludio: 'Interludio',
+    outro: 'Outro',
+    final: 'Final',
+    medley: 'Medley',
+    instrumental: 'Instrumental',
+    instr: 'Instrumental',
+    solo: 'Solo'
+  };
+
+  // If tag (tokenType) is provided, use that as main type
+  if (tokenType && map[tokenType]) {
+    return { type: tokenType, title: map[tokenType] + num };
+  }
+
+  // Try to detect from the text
+  for (const key in map) {
+    if (t.includes(key)) {
+      return { type: key, title: map[key] + num };
+    }
+  }
+
+  // Fallback generic
+  return { type: 'generic', title: (labelGuess || 'Section') + num };
+}
+function autoBadgeFrom(type, title) {
+  const m = (title || '').match(/(\d+)/);
+  const n = m ? m[1] : '';
+
+  switch (type) {
+    case 'verse':
+    case 'verso':
+    case 'estrofa':        return 'V' + (n || '');
+    case 'prechorus':
+    case 'precoro':        return 'Pc' + (n || '');
+    case 'chorus':
+    case 'coro':           return 'C' + (n || '');
+    case 'bridge':
+    case 'puente':         return 'B' + (n || '');
+    case 'intro':          return 'I' + (n || '');
+    case 'interlude':
+    case 'interludio':     return 'It' + (n || '');
+    case 'outro':
+    case 'final':          return 'O' + (n || '');
+    case 'medley':         return 'M' + (n || '');
+    case 'instrumental':
+    case 'instr':          return 'Inst' + (n || '');
+    case 'solo':           return 'S' + (n || '');
+    default:               return '';
+  }
+}
+/* Header section_list → badges (AUTO detect types) */
+function mapSectionToken(tok) {
+  if (!tok) return { type: 'generic', text: '' };
+
+  const t = tok.trim().toUpperCase();
+
+  // Detect number (e.g., "C2", "CORO 2", "VERSE 1")
+  const numMatch = t.match(/(\d+)/);
+  const num = numMatch ? numMatch[1] : '';
+
+  // Normalize words without numbers for matching
+  const base = t.replace(/\d+/g, '').trim();
+
+  // Map English + Spanish section types
+  const map = {
+    I: 'intro', INTRO: 'intro',
+    V: 'verse', VERSE: 'verse', VERSO: 'verse', ESTROFA: 'verse',
+    PC: 'prechorus', PCH: 'prechorus', PRECHORUS: 'prechorus', PRECORO: 'prechorus',
+    C: 'chorus', CH: 'chorus', CHORUS: 'chorus', CORO: 'chorus',
+    B: 'bridge', BR: 'bridge', BRIDGE: 'bridge', PUENTE: 'bridge',
+    IT: 'interlude', INTERLUDE: 'interlude', INTERLUDIO: 'interlude',
+    O: 'outro', OUTRO: 'outro', FINAL: 'outro',
+    M: 'medley', MEDLEY: 'medley',
+    INST: 'instrumental', INSTRUMENTAL: 'instrumental', INSTR: 'instrumental',
+    S: 'solo', SOLO: 'solo'
+  };
+
+  // Determine section type
+  let type = 'generic';
+  for (const key in map) {
+    if (base === key) { type = map[key]; break; }
+  }
+
+  // Badge text logic
+  let text = '';
+  switch (type) {
+    case 'verse': text = 'V' + (num || ''); break;
+    case 'prechorus': text = 'Pc' + (num || ''); break;
+    case 'chorus': text = 'C' + (num || ''); break;
+    case 'bridge': text = 'B' + (num || ''); break;
+    case 'intro': text = 'I' + (num || ''); break;
+    case 'interlude': text = 'It' + (num || ''); break;
+    case 'outro': text = 'O' + (num || ''); break;
+    case 'medley': text = 'M' + (num || ''); break;
+    case 'instrumental': text = 'Inst' + (num || ''); break;
+    case 'solo': text = 'S' + (num || ''); break;
+    default: text = base || '';
+  }
+
+  return { type, text };
+}
+
+
+function buildHeaderBadges(sectionListStr){
+  if(!sectionListStr) return '';
+  const tokens=sectionListStr.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!tokens.length) return '';
+  const spans=tokens.map(tok=>{
+    const {type,text}=mapSectionToken(tok);
+    return `<span class="header-badge type-${type}">${esc(text)}</span>`;
+  });
+  return `<div class="header-badges">${spans.join('')}</div>`;
+}
+
+/* Header parsing */
+function splitHeaderBlock(raw){
+  const start=raw.indexOf('{start_header}'), end=raw.indexOf('{end_header}');
+  if(start!==-1 && end!==-1 && end>start){
+    const before=raw.slice(0,start), header=raw.slice(start+15,end), after=raw.slice(end+13);
+    return{header,body:before+after,hasExplicit:true};
+  }
+  return{header:null,body:raw,hasExplicit:false};
+}
+function parseMetaFields(text){
+  const get=tag=>{ const m=text.match(new RegExp(`\\{${tag}:\\s*(.*?)\\}`,'i')); return m?m[1].trim():null; };
+  return{
+    title:get('title'),subtitle:get('subtitle'),artist:get('artist'),album:get('album'),
+    key:get('key'),time:get('time'),tempo:get('tempo'),capo:get('capo'),
+    comment:get('comment'),comment_box:get('comment_box'),section_list:get('section_list')
+  };
+}
+function getDisplayKeyForCommentBox(selValue){
+  // ✅ Always prefer selected key if it exists, else show original
+  if (selValue && selValue.trim() !== '') return selValue.trim();
+  return songOriginalKey || '';
+}
+
+function replaceSingleBracketWithDisplayKey(text, selValue){
+  // ✅ Ensure the displayed key updates or adds automatically
+  const k = getDisplayKeyForCommentBox(selValue);
+  if (!k) return text;
+  if (/\[[^\]]*\]/.test(text)) {
+    // Replace existing [ ... ] content
+    return text.replace(/\[[^\]]*\]/, `[${k}]`);
+  } else {
+    // Add brackets if none exist
+    return `${text} [${k}]`;
+  }
+}
+function renderHeaderRaw(headerText, metaFallback=null, selValue=''){
+  let html='<div class="header-box"><div class="header-content">';
+  let sectionListStr=null; let metaLine=null; let commentBoxHtml='';
+  const pushLine=s=>{ html+=`<div>${s}</div>`; };
+  if(headerText){
+    const lines=headerText.replace(/\r/g,'').split('\n');
+    for(const raw of lines){
+      const line=raw.trim(); if(!line) continue;
+      const kv=line.match(/^\{([^:}]+):\s*(.*?)\}$/);
+      if(kv){
+        const tag=kv[1].toLowerCase(), val=kv[2];
+        if(tag==='title') pushLine(`<div class="title">${esc(val)}</div>`);
+        else if(tag==='subtitle') pushLine(`<div class="subtitle">${esc(val)}</div>`);
+        else if(tag==='artist') pushLine(`<div class="meta-row">Artist: ${esc(val)}</div>`);
+        else if(tag==='album') pushLine(`<div class="meta-row">Album: ${esc(val)}</div>`);
+   else if(['key','time','tempo','capo'].includes(tag)){
+  if(!metaLine) metaLine=[];
+  let displayVal = val;  // always show original header value
+  metaLine.push(`${tag[0].toUpperCase()+tag.slice(1)}: ${esc(displayVal)}`);
+}
+
+else if(tag==='comment') pushLine(`<div class="meta-row">${esc(val)}</div>`);
+        else if(tag==='comment_box'){
+          const updated=replaceSingleBracketWithDisplayKey(val, selValue);
+          commentBoxHtml=`<div style="display:inline-block;border:1px solid #d4d8e0;
+            border-radius:8px;padding:6px 10px;margin:6px 0;background:#fafafa">${esc(updated)}</div>`;
+        } else if(tag==='section_list'){ sectionListStr=val; }
+        else{ pushLine(esc(line)); }
+      } else { pushLine(esc(line)); }
+    }
+  } else if(metaFallback){
+    if(metaFallback.title) pushLine(`<div class="title">${esc(metaFallback.title)}</div>`);
+    if(metaFallback.subtitle) pushLine(`<div class="subtitle">${esc(metaFallback.subtitle)}</div>`);
+    if(metaFallback.artist||metaFallback.album){
+      let t=''; if(metaFallback.artist)t+=`Artist: ${esc(metaFallback.artist)}`;
+      if(metaFallback.artist&&metaFallback.album)t+=' • ';
+      if(metaFallback.album)t+=`Album: ${esc(metaFallback.album)}`;
+      pushLine(`<div class="meta-row">${t}</div>`);
+    }
+    const extras=[];
+    if(metaFallback.key)extras.push('Key: '+esc(metaFallback.key));
+    if(metaFallback.time)extras.push('Time: '+esc(metaFallback.time));
+    if(metaFallback.tempo)extras.push('Tempo: '+esc(metaFallback.tempo));
+    if(metaFallback.capo)extras.push('Capo: '+esc(metaFallback.capo));
+    if(extras.length) pushLine(`<div class="meta-row">${extras.join(' • ')}</div>`);
+    if(metaFallback.comment) pushLine(`<div class="meta-row">${esc(metaFallback.comment)}</div>`);
+    if(metaFallback.comment_box){
+      const updated=replaceSingleBracketWithDisplayKey(metaFallback.comment_box, selValue);
+      pushLine(`<div style="display:inline-block;border:1px solid #d4d8e0;border-radius:8px;
+        padding:6px 10px;margin:6px 0;background:#fafafa">${esc(updated)}</div>`);
+    }
+    sectionListStr=metaFallback.section_list||null;
+  }
+  if(metaLine&&metaLine.length){
+    html+=`<div class="meta-row">${metaLine.join(' | ')}</div>`;
+    if(commentBoxHtml) html+=`<div>${commentBoxHtml}</div>`;
+  }
+  html+='</div>';
+  const badges=buildHeaderBadges(sectionListStr);
+  if(badges) html+=badges;
+  html+='</div>';
+  return html;
+}
+/* Body parser with section boxes (head protected, body flowable) */
+function parseChordProBody(text){
+  const lines=text.replace(/\r/g,'').split('\n'), parts=[];
+  let sectionOpen=false, blockType=null;
+  let nextNoBadge=false,nextNoLine=false,nextBadge=null,nextPlain=false;
+
+  const openSection=(labelGuess,tokenType=null)=>{
+    const cls=classifySection(labelGuess,tokenType), type=cls.type, title=cls.title;
+    const hideBadge=nextPlain||nextNoBadge, hideLine=nextPlain||nextNoLine;
+    const badgeText=nextPlain?'':(nextBadge!=null?nextBadge:autoBadgeFrom(type,title));
+    parts.push(`<div class="section-box ${type}">`);
+    parts.push(`<div class="section-head">`);
+    if(!hideLine) parts.push('<div class="section-line"></div>');
+    if(badgeText) parts.push(`<div class="section-badge">${esc(badgeText)}</div>`);
+    parts.push(`<div class="section-title">${esc(title)}</div>`);
+    parts.push(`</div><div class="section-body">`);
+    nextNoBadge=false; nextNoLine=false; nextBadge=null; nextPlain=false; sectionOpen=true;
+  };
+  const closeSection=()=>{ if(sectionOpen){ parts.push('</div></div>'); sectionOpen=false; } };
+
+  for(const raw of lines){
+    const line=raw.trimEnd();
+
+    const ov=line.match(/^\{badge:\s*(.*?)\}$/i); if(ov){nextBadge=ov[1];continue;}
+    if(/^\{no_badge\}$/i.test(line)){nextNoBadge=true;continue;}
+    if(/^\{no_line\}$/i.test(line)){nextNoLine=true;continue;}
+    if(/^\{plain_section\}$/i.test(line)){nextPlain=true;continue;}
+
+    const kv=line.match(/^\{([^:}]+):\s*(.*?)\}$/);
+    if(kv){
+      const tag=kv[1].toLowerCase(), val=kv[2];
+      if(tag==='comment'){ closeSection(); openSection(val,null); }
+      else if(tag==='comment_italic'){ if(!sectionOpen) openSection('Section',null); parts.push(`<div class="comment" style="font-style:italic">${esc(val)}</div>`); }
+      else if(tag==='comment_box'){ if(!sectionOpen) openSection('Section',null); parts.push(`<div class="comment box">${esc(val)}</div>`); }
+      continue;
+    }
+
+ // 🎯 Improved section token handling (numbered + bilingual)
+const match = line.match(/^\{([a-zA-Z0-9_\-]+)(?:\s+(\d+))?\}$/);
+if (match) {
+  const t = match[1].toLowerCase();
+  const num = match[2] ? ` ${match[2]}` : '';
+
+  // === OPEN SECTION TYPES ===
+  if (['start_of_chorus','soc','start_chorus'].includes(t)) {
+    closeSection(); blockType='chorus'; openSection('Chorus' + num,'chorus'); continue;
+  }
+  if (['start_of_coro'].includes(t)) {
+    closeSection(); blockType='chorus'; openSection('Coro' + num,'chorus'); continue;
+  }
+  if (['start_of_bridge','start_bridge','start_of_puente'].includes(t)) {
+    closeSection(); blockType='bridge'; openSection('Bridge' + num,'bridge'); continue;
+  }
+  if (['start_of_verse','verse','verso','estrofa'].includes(t)) {
+    closeSection(); blockType='verse'; openSection('Verse' + num,'verse'); continue;
+  }
+  if (['start_of_intro','intro'].includes(t)) {
+    closeSection(); blockType='intro'; openSection('Intro' + num,'intro'); continue;
+  }
+  if (['start_of_interlude','interlude','interludio'].includes(t)) {
+    closeSection(); blockType='interlude'; openSection('Interlude' + num,'interlude'); continue;
+  }
+  if (['start_of_outro','outro','final'].includes(t)) {
+    closeSection(); blockType='outro'; openSection('Outro' + num,'outro'); continue;
+  }
+  if (['start_of_prechorus','prechorus','pre_chorus','precoro'].includes(t)) {
+    closeSection(); blockType='prechorus'; openSection('Pre-Chorus' + num,'prechorus'); continue;
+  }
+  if (['start_of_medley','medley'].includes(t)) {
+    closeSection(); blockType='medley'; openSection('Medley' + num,'medley'); continue;
+  }
+  if (['start_of_instrumental','instrumental','instr'].includes(t)) {
+    closeSection(); blockType='instrumental'; openSection('Instrumental' + num,'instrumental'); continue;
+  }
+  if (['start_of_solo','solo'].includes(t)) {
+    closeSection(); blockType='solo'; openSection('Solo' + num,'solo'); continue;
+  }
+  if (['start_of_tab','start_tab'].includes(t)) {
+    if(!sectionOpen) openSection('Tab' + num,'generic');
+    blockType='tab'; continue;
+  }
+
+  // === CLOSE SECTION TYPES ===
+  if ([
+    'end_of_chorus','eoc','end_chorus',
+    'end_of_bridge','end_bridge',
+    'end_of_tab','end_tab',
+    'end_of_medley',
+    'end_of_instrumental',
+    'end_of_solo'
+  ].includes(t)) {
+    blockType=null; closeSection(); continue;
+  }
+  continue;
+}
+
+
+    if(line.trim()===''){ continue; }
+    if(!sectionOpen) openSection('Section',null);
+    if(blockType==='tab') parts.push(`<pre>${esc(line)}</pre>`); else parts.push(renderLineTwoRow(line));
+  }
+
+  closeSection();
+  return parts.join('');
+}
+
+/* Transpose helpers */
+function normalizeKey(k){ if(!k) return null; const m=k.trim().match(/^([A-G])([#b]?)(m?)$/i); if(!m) return null;
+  let r=m[1].toUpperCase(), a=m[2]||'', min=m[3]?'m':''; let full=r+a; if(FLAT_EQ[full]) full=FLAT_EQ[full]; return full+min; }
+function computeSemitoneDiff(a,b){ const nf=normalizeKey(a), nt=normalizeKey(b); if(!nf||!nt) return 0;
+  const i1=NOTES.indexOf(nf.replace(/m$/,'')), i2=NOTES.indexOf(nt.replace(/m$/,'')); let d=i2-i1; if(d>6)d-=12; if(d<-6)d+=12; return d; }
+
+/* ========== Auto-Fit Engine (Letter, 1–2 col, scaling) ========== */
+function setVars({lyric, chord, line, sectionTitle, meta, badge, title, subtitle, viewerPad}){
+  const v=document.getElementById('outputArea');
+  v.style.setProperty('--lyric-size', lyric+'px');
+  v.style.setProperty('--chord-size', chord+'px');
+  v.style.setProperty('--pre-line', line);
+  v.style.setProperty('--section-title', sectionTitle+'px');
+  v.style.setProperty('--meta-size', meta+'px');
+  v.style.setProperty('--badge-font', badge+'px');
+  v.style.setProperty('--title-size', title+'px');
+  v.style.setProperty('--subtitle-size', subtitle+'px');
+  v.style.setProperty('--viewer-pad', viewerPad+'px');
+}
+function measureFitsOneScreen(){
+  const v=document.getElementById('outputArea');
+  const avail = window.innerHeight * 0.90;
+  return v.scrollHeight <= avail;
+}
+function applyColumns(twoCols){
+  const v=document.getElementById('outputArea');
+  if(twoCols) v.classList.add('two-col'); else v.classList.remove('two-col');
+}
+function autoFit(){
+  applyColumns(false);
+  setVars({lyric:16,chord:17,line:1.6,sectionTitle:16,meta:14,badge:12,title:32,subtitle:18,viewerPad:24});
+  if(measureFitsOneScreen()) return;
+  applyColumns(true);
+  if(measureFitsOneScreen()) return;
+  let lyric=16,chord=17,line=1.58,sectionTitle=15,meta=13,badge=12,title=30,subtitle=17,viewerPad=20;
+  for(let step=0; step<6; step++){
+    lyric=Math.max(13, lyric-1);
+    chord=Math.max(14, chord-1);
+    line=Math.max(1.45,(line-0.02));
+    sectionTitle=Math.max(14,sectionTitle-1);
+    meta=Math.max(12,meta-1);
+    badge=Math.max(11,badge-1);
+    title=Math.max(26,title-1);
+    subtitle=Math.max(16,subtitle-1);
+    viewerPad=Math.max(12,viewerPad-2);
+    setVars({lyric,chord,line,sectionTitle,meta,badge,title,subtitle,viewerPad});
+    if(measureFitsOneScreen()) return;
+  }
+}
+
+/* ================== Render pipeline ================== */
+function render(){
+  const raw=document.getElementById('source').value||'';
+  const m=raw.match(/\{key:\s*([A-G][#b]?m?)\s*\}/i);
+  songOriginalKey = m ? m[1].replace(/\s+/g,'') : null;
+  const sel=document.getElementById('keySelect').value;
+  transposeSteps=(sel&&songOriginalKey)?computeSemitoneDiff(songOriginalKey,sel):0;
+  // 🎸 Interactive Capo Transpose Logic
+  // Detect capo value (0–12) and apply downward semitone shift to lyric chords only
+  let capoShift = 0;
+  const capoMatch = raw.match(/\{capo:\s*(\d+)\s*\}/i);
+  if (capoMatch) {
+    const capoVal = parseInt(capoMatch[1], 10);
+    if (!isNaN(capoVal) && capoVal >= 0 && capoVal <= 12) capoShift = capoVal;
+  }
+
+  // Combine normal key transposition and capo offset:
+  // Chords are transposed by (key transpose - capo semitones)
+  const effectiveSteps = transposeSteps - capoShift;
+  // 🎶 Optional: display capo note under header if capo > 0
+  let capoNoteHtml = '';
+  if (capoShift > 0) {
+    capoNoteHtml = `<div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
+      Guitarist: Capo on fret ${capoShift}
+    </div>`;
+  }
+
+  const {header,body,hasExplicit}=splitHeaderBlock(raw);
+  const metaFallback=parseMetaFields(raw);
+  const headerHtml=renderHeaderRaw(header,hasExplicit?null:metaFallback,sel);
+  const fullHeaderHtml = headerHtml + capoNoteHtml;
+  const bodyT=applyTransposeToText(body,effectiveSteps);
+  const bodyHtml=parseChordProBody(bodyT);
+    document.getElementById('outputArea').innerHTML = fullHeaderHtml + bodyHtml;
+
+// Run auto-fit and apply Safari column reflow fix
+requestAnimationFrame(()=>{
+  autoFit();
+
+  // 🧩 Safari fix for header jumping to bottom after re-render
+  if (/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)) {
+    const viewer = document.getElementById('outputArea');
+    viewer.style.display = 'none';     // temporarily hide
+    void viewer.offsetHeight;          // force reflow
+    viewer.style.display = '';         // show again
+  }
+});
+}
+
+/* ================== UI wiring ================== */
+document.getElementById('render').addEventListener('click',render);
+/* ================== Guitar Chord Diagrams ================== */
+
+// 🎵 Extended open and barre chord shapes
+// 🎸 Complete Guitar Chord Dictionary
+const GUITAR_CHORDS = {
+  // C family
+  'C':  ['x',3,2,0,1,0],
+  'Cm': ['x',3,1,0,1,3],
+  'C7': ['x',3,2,3,1,0],
+  'Cm7': ['x',3,1,3,1,3],
+  'C#m7': ['x',4,2,4,2,4],
+
+  // C# / Db
+  'C#':  ['x',4,6,6,6,4],
+  'C#m': ['x',4,6,6,5,4],
+  'C#7': ['x',4,6,4,6,4],
+  'C#m7': ['x',4,2,4,2,4],
+  'Db':  ['x',4,6,6,6,4],
+  'Dbm': ['x',4,6,6,5,4],
+  'Db7': ['x',4,6,4,6,4],
+  'Dbm7': ['x',4,2,4,2,4],
+
+  // D family
+  'D':  ['x','x',0,2,3,2],
+  'Dm': ['x','x',0,2,3,1],
+  'D7': ['x','x',0,2,1,2],
+  'Dm7': ['x','x',0,2,1,1],
+
+  // D# / Eb
+  'D#':  ['x','x',1,3,4,3],
+  'D#m': ['x','x',1,3,4,2],
+  'D#7': ['x','x',1,3,2,3],
+  'D#m7': ['x','x',1,3,2,2],
+  'Eb':  ['x','x',1,3,4,3],
+  'Ebm': ['x','x',1,3,4,2],
+  'Eb7': ['x','x',1,3,2,3],
+  'Ebm7': ['x','x',1,3,2,2],
+
+  // E family
+  'E':  [0,2,2,1,0,0],
+  'Em': [0,2,2,0,0,0],
+  'E7': [0,2,0,1,0,0],
+  'Em7': [0,2,2,0,3,0],
+
+  // F family
+  'F':  [1,3,3,2,1,1],
+  'Fm': [1,3,3,1,1,1],
+  'F7': [1,3,1,2,1,1],
+  'Fm7': [1,3,1,1,1,1],
+
+  // F# / Gb
+  'F#':  [2,4,4,3,2,2],
+  'F#m': [2,4,4,2,2,2],
+  'F#7': [2,4,2,3,2,2],
+  'F#m7': [2,4,2,2,2,2],
+  'Gb':  [2,4,4,3,2,2],
+  'Gbm': [2,4,4,2,2,2],
+  'Gb7': [2,4,2,3,2,2],
+  'Gbm7': [2,4,2,2,2,2],
+
+  // G family
+  'G':  [3,2,0,0,0,3],
+  'Gm': [3,5,5,3,3,3],
+  'G7': [3,2,0,0,0,1],
+  'Gm7': [3,5,3,3,3,3],
+
+  // G# / Ab
+  'G#':  [4,6,6,5,4,4],
+  'G#m': [4,6,6,4,4,4],
+  'G#7': [4,6,4,5,4,4],
+  'G#m7': [4,6,4,4,4,4],
+  'Ab':  [4,6,6,5,4,4],
+  'Abm': [4,6,6,4,4,4],
+  'Ab7': [4,6,4,5,4,4],
+  'Abm7': [4,6,4,4,4,4],
+
+  // A family
+  'A':  ['x',0,2,2,2,0],
+  'Am': ['x',0,2,2,1,0],
+  'A7': ['x',0,2,0,2,0],
+  'Am7': ['x',0,2,0,1,0],
+
+  // A# / Bb
+  'A#':  ['x',1,3,3,3,1],
+  'A#m': ['x',1,3,3,2,1],
+  'A#7': ['x',1,3,1,3,1],
+  'A#m7': ['x',1,3,1,2,1],
+  'Bb':  ['x',1,3,3,3,1],
+  'Bbm': ['x',1,3,3,2,1],
+  'Bb7': ['x',1,3,1,3,1],
+  'Bbm7': ['x',1,3,1,2,1],
+
+  // B family
+  'B':  ['x',2,4,4,4,2],
+  'Bm': ['x',2,4,4,3,2],
+  'B7': ['x',2,1,2,0,2],
+  'Bm7': ['x',2,4,2,3,2],
+
+// === Slash Chords (Guitar) ===
+
+// Major slash chords
+'D/F#': [2,0,0,2,3,2],
+'G/B':  ['x',2,0,0,0,3],
+'C/E':  ['x',3,2,0,1,0],
+'F/A':  ['x',0,3,2,1,1],
+'A/C#': ['x',4,2,2,2,0],
+'E/G#': [4,2,2,1,0,0],
+'C/G':  [3,3,2,0,1,0],
+'F/C':  [1,3,3,2,1,1],
+'F7/E':  [0,3,1,2,1,1],
+'B/F#': [2,2,4,4,4,2],
+'G/D':  ['x','x',0,0,0,3],
+'D/A':  ['x',0,0,2,3,2],
+'A/E':  [0,0,2,2,2,0],
+'A#/C':  ['x',3,0,3,3,1],
+'A#/D':  ['x','x',0,3,3,1],
+'E/B':  ['x',2,2,1,0,0],
+'C/A':  ['x',0,2,0,1,0],
+'C/B':  ['x',2,2,0,1,0],
+
+// Minor slash chords
+'Em/B': ['x',2,2,0,0,0],
+'Am/E': [0,0,2,2,1,0],
+'Dm/A': ['x',0,0,2,3,1],
+'Cm/G': [3,3,1,0,1,3],
+'Cm/D#': ['x','x',1,0,1,3],
+'Bm/F#': [2,2,4,4,3,2],
+'Bm/C#': ['x',4,4,4,3,'x'],
+'Gm/D': ['x','x',0,3,3,3],
+'Fm/C': ['x',3,3,1,1,1],
+'Am/C': ['x',3,2,2,1,0],
+'Em/G': [3,2,0,0,0,0],
+
+// Seventh slash chords (useful voicings)
+'C7/E': ['x',7,6,7,5,8],
+'C7/A#': ['x',1,2,0,1,'x'],
+'G7/B': ['x',2,0,0,0,1],
+'D7/C': ['x',3,0,2,1,2],
+'D7/F#': [2,0,0,2,1,2],
+'Dm7/F': [1,0,0,2,1,1],
+'A7/C#': ['x',4,2,0,2,0],
+'E7/G#': [4,2,0,1,0,0],
+'F7/A': ['x',0,3,2,1,3],
+
+// === Power Chords (5) ===
+'C5':  ['x',3,5,5,'x','x'],
+'C#5': ['x',4,6,6,'x','x'],
+'D5':  ['x',5,7,7,'x','x'],
+'D#5': ['x',6,8,8,'x','x'],
+'E5':  [0,2,2,'x','x','x'],
+'F5':  [1,3,3,'x','x','x'],
+'F#5': [2,4,4,'x','x','x'],
+'G5':  [3,5,5,'x','x','x'],
+'G#5': [4,6,6,'x','x','x'],
+'A5':  ['x',0,2,2,'x','x'],
+'A#5': ['x',1,3,3,'x','x'],
+'B5':  ['x',2,4,4,'x','x'],
+
+// === Suspended Chords (sus2 / sus4) ===
+'Csus2': ['x',3,0,0,1,3],
+'Csus4': ['x',3,3,0,1,1],
+'C#sus2': ['x',4,6,6,4,4],
+'C#sus4': ['x',4,6,6,7,7],
+'Dsus2': ['x','x',0,2,3,0],
+'Dsus4': ['x','x',0,2,3,3],
+'D#sus2': ['x','x',1,3,4,1],
+'D#sus4': ['x','x',1,3,4,4],
+'Esus2': [0,2,4,4,0,0],
+'Esus4': [0,2,2,2,0,0],
+'Fsus2': [1,3,3,0,1,1],
+'Fsus4': [1,3,3,3,1,1],
+'F#sus2': [2,4,4,1,2,2],
+'F#sus4': [2,4,4,4,2,2],
+'Gsus2': [3,5,5,2,3,3],
+'Gsus4': [3,5,5,5,3,3],
+'G#sus2': [4,6,6,3,4,4],
+'G#sus4': [4,6,6,6,4,4],
+'Asus2': ['x',0,2,2,0,0],
+'Asus4': ['x',0,2,2,3,0],
+'A#sus2': ['x',1,3,3,1,1],
+'A#sus4': ['x',1,3,3,4,4],
+'Bsus2': ['x',2,4,4,2,2],
+'Bsus4': ['x',2,4,4,5,5]
+
+};
+
+/* ================== Keyboard Chord Diagrams ================== */
+function drawKeyboardChord(name, notes) {
+  const width = 120, height = 50;
+  const whiteKeys = ['C','D','E','F','G','A','B'];
+  const blackKeys = ['C#','D#',null,'F#','G#','A#',null];
+  const keyOrder = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Draw white keys
+  whiteKeys.forEach((note, i)=>{
+    const x = i*(width/7);
+    svg += `<rect x="${x}" y="0" width="${width/7}" height="${height}" fill="#fff" stroke="#000"/>`;
+  });
+
+  // Highlight pressed white keys
+  notes.forEach(n=>{
+    const idx = whiteKeys.indexOf(n.replace(/[#b]/,''));
+    if (idx>=0 && !n.includes('#')) {
+      const x = idx*(width/7);
+      svg += `<rect x="${x}" y="0" width="${width/7}" height="${height}" fill="#88c" opacity="0.4"/>`;
+    }
+  });
+
+  // Draw black keys
+  blackKeys.forEach((note,i)=>{
+    if(!note) return;
+    const x = i*(width/7) + (width/14)*0.8;
+    svg += `<rect x="${x}" y="0" width="${width/14}" height="${height*0.6}" fill="#000"/>`;
+  });
+
+  // Highlight pressed black keys
+  notes.forEach(n=>{
+    if(n.includes('#')){
+      const idx = keyOrder.indexOf(n);
+      if(idx>=0){
+        const x = (idx*(width/12));
+        svg += `<rect x="${x}" y="0" width="${width/14}" height="${height*0.6}" fill="#88f" opacity="0.6"/>`;
+      }
+    }
+  });
+
+  svg += `<text x="${width/2}" y="${height - 3}" font-size="8" fill="#111" text-anchor="middle">${name}</text>`;
+  svg += `</svg>`;
+  return svg;
+}
+
+// 🎹 Complete Keyboard Chord Dictionary
+const KEYBOARD_CHORDS = {
+  // C family
+  'C':   ['C','E','G'],
+  'Cm':  ['C','D#','G'],
+  'C7':  ['C','E','G','A#'],
+  'Cm7': ['C','D#','G','A#'],
+  'C#m7': ['C#','E','G#','B'],
+
+  // C# / Db
+  'C#':   ['C#','F','G#'],
+  'C#m':  ['C#','E','G#'],
+  'C#7':  ['C#','F','G#','B'],
+  'C#m7': ['C#','E','G#','B'],
+  'Db':   ['Db','F','Ab'],
+  'Dbm':  ['Db','E','Ab'],
+  'Db7':  ['Db','F','Ab','B'],
+  'Dbm7': ['Db','E','Ab','B'],
+
+  // D family
+  'D':   ['D','F#','A'],
+  'Dm':  ['D','F','A'],
+  'D7':  ['D','F#','A','C'],
+  'Dm7': ['D','F','A','C'],
+
+  // D# / Eb
+  'D#':   ['D#','G','A#'],
+  'D#m':  ['D#','F#','A#'],
+  'D#7':  ['D#','G','A#','C#'],
+  'D#m7': ['D#','F#','A#','C#'],
+  'Eb':   ['Eb','G','Bb'],
+  'Ebm':  ['Eb','Gb','Bb'],
+  'Eb7':  ['Eb','G','Bb','Db'],
+  'Ebm7': ['Eb','Gb','Bb','Db'],
+
+  // E family
+  'E':   ['E','G#','B'],
+  'Em':  ['E','G','B'],
+  'E7':  ['E','G#','B','D'],
+  'Em7': ['E','G','B','D'],
+
+  // F family
+  'F':   ['F','A','C'],
+  'Fm':  ['F','G#','C'],
+  'F7':  ['F','A','C','D#'],
+  'Fm7': ['F','G#','C','D#'],
+
+  // F# / Gb
+  'F#':   ['F#','A#','C#'],
+  'F#m':  ['F#','A','C#'],
+  'F#7':  ['F#','A#','C#','E'],
+  'F#m7': ['F#','A','C#','E'],
+  'Gb':   ['Gb','Bb','Db'],
+  'Gbm':  ['Gb','A','Db'],
+  'Gb7':  ['Gb','Bb','Db','E'],
+  'Gbm7': ['Gb','A','Db','E'],
+
+  // G family
+  'G':   ['G','B','D'],
+  'Gm':  ['G','A#','D'],
+  'G7':  ['G','B','D','F'],
+  'Gm7': ['G','A#','D','F'],
+
+  // G# / Ab
+  'G#':   ['G#','C','D#'],
+  'G#m':  ['G#','B','D#'],
+  'G#7':  ['G#','C','D#','F#'],
+  'G#m7': ['G#','B','D#','F#'],
+  'Ab':   ['Ab','C','Eb'],
+  'Abm':  ['Ab','B','Eb'],
+  'Ab7':  ['Ab','C','Eb','Gb'],
+  'Abm7': ['Ab','B','Eb','Gb'],
+
+  // A family
+  'A':   ['A','C#','E'],
+  'Am':  ['A','C','E'],
+  'A7':  ['A','C#','E','G'],
+  'Am7': ['A','C','E','G'],
+
+  // A# / Bb
+  'A#':   ['A#','D','F'],
+  'A#m':  ['A#','C#','F'],
+  'A#7':  ['A#','D','F','G#'],
+  'A#m7': ['A#','C#','F','G#'],
+  'Bb':   ['Bb','D','F'],
+  'Bbm':  ['Bb','Db','F'],
+  'Bb7':  ['Bb','D','F','Ab'],
+  'Bbm7': ['Bb','Db','F','Ab'],
+
+  // B family
+  'B':   ['B','D#','F#'],
+  'Bm':  ['B','D','F#'],
+  'B7':  ['B','D#','F#','A'],
+  'Bm7': ['B','D','F#','A'],
+
+// === Slash Chords (Keyboard) ===
+'D/F#': ['F#','A','D'],
+'G/B':  ['B','D','G'],
+'C/E':  ['E','G','C'],
+'F/A':  ['A','C','F'],
+'A/C#': ['C#','E','A'],
+'E/G#': ['G#','B','E'],
+'G/D':  ['D','G','B'],
+'D/A':  ['A','D','F#'],
+'A/E':  ['E','A','C#'],
+'C/G':  ['G','C','E'],
+'F/C':  ['C','F','A'],
+'E/B':  ['B','E','G#'],
+'B/F#': ['F#','B','D#'],
+'Em/B': ['B','E','G'],
+'Am/E': ['E','A','C'],
+'Bm/F#': ['F#','B','D'],
+
+// === Slash Chords (Keyboard) ===
+
+// Major slash chords
+'D/F#': ['F#','A','D'],
+'G/B':  ['B','D','G'],
+'C/E':  ['E','G','C'],
+'F/A':  ['A','C','F'],
+'A/C#': ['C#','E','A'],
+'E/G#': ['G#','B','E'],
+'C/G':  ['G','C','E'],
+'F/C':  ['C','F','A'],
+'B/F#': ['F#','B','D#'],
+'G/D':  ['D','G','B'],
+'D/A':  ['A','D','F#'],
+'A/E':  ['E','A','C#'],
+'A#/C':  ['C','A#','F'],
+'A#/D':  ['D','A#','F'],
+'E/B':  ['B','E','G#'],
+'C/A':  ['A','C','E'],
+'C/B':  ['B','C','E'],
+
+// Minor slash chords
+'Em/B': ['B','E','G'],
+'Am/E': ['E','A','C'],
+'Dm/A': ['A','D','F'],
+'Dm7/F': ['F','D','A','C'],
+'Cm/G': ['G','C','D#'],
+'Cm/D#': ['D#','C','G'],
+'Bm/F#': ['F#','B','D'],
+'Bm/C#': ['C#','B','D'],
+'Gm/D': ['D','G','A#'],
+'Fm/C': ['C','F','G#'],
+'Am/C': ['C','E','A'],
+'Em/G': ['G','B','E'],
+
+// Seventh slash chords
+'C7/E': ['E','G','A#','C'],
+'C7/A#': ['A#','C','E','G'],
+'G7/B': ['B','D','F','G'],
+'D7/F#': ['F#','A','C','D'],
+'D7/C': ['C','F#','A','D'],
+'A7/C#': ['C#','E','G','A'],
+'E7/G#': ['G#','B','D','E'],
+'F7/A': ['A','C','D#','F'],
+'F7/E': ['E','F','A','C'],
+
+// === Power Chords (5) ===
+'C5':  ['C','G'],
+'C#5': ['C#','G#'],
+'D5':  ['D','A'],
+'D#5': ['D#','A#'],
+'E5':  ['E','B'],
+'F5':  ['F','C'],
+'F#5': ['F#','C#'],
+'G5':  ['G','D'],
+'G#5': ['G#','D#'],
+'A5':  ['A','E'],
+'A#5': ['A#','F'],
+'B5':  ['B','F#'],
+
+// === Suspended Chords (sus2 / sus4) ===
+'Csus2': ['C','D','G'],
+'Csus4': ['C','F','G'],
+'C#sus2': ['C#','D#','G#'],
+'C#sus4': ['C#','F#','G#'],
+'Dsus2': ['D','E','A'],
+'Dsus4': ['D','G','A'],
+'D#sus2': ['D#','F','A#'],
+'D#sus4': ['D#','G#','A#'],
+'Esus2': ['E','F#','B'],
+'Esus4': ['E','A','B'],
+'Fsus2': ['F','G','C'],
+'Fsus4': ['F','A#','C'],
+'F#sus2': ['F#','G#','C#'],
+'F#sus4': ['F#','B','C#'],
+'Gsus2': ['G','A','D'],
+'Gsus4': ['G','C','D'],
+'G#sus2': ['G#','A#','D#'],
+'G#sus4': ['G#','C#','D#'],
+'Asus2': ['A','B','E'],
+'Asus4': ['A','D','E'],
+'A#sus2': ['A#','C','F'],
+'A#sus4': ['A#','D#','F'],
+'Bsus2': ['B','C#','F#'],
+'Bsus4': ['B','E','F#']
+
+};
+
+
+
+// 🎸 Smart guitar chord diagram — shows fret number only if chord goes past 5th fret
+function drawGuitarChord(name, frets) {
+  const fretCount = 5;
+  const width = 60, height = 80;
+
+  const numericFrets = frets.filter(f => typeof f === 'number');
+  const minFret = numericFrets.length ? Math.min(...numericFrets) : 0;
+  const maxFret = numericFrets.length ? Math.max(...numericFrets) : 0;
+
+  // ✅ Shift view only if chord extends beyond 5th fret
+  const shiftNeeded = maxFret > fretCount;
+  const shiftBase = shiftNeeded ? (minFret - 1) : 0;
+  const showFretNumber = shiftNeeded;
+
+  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<rect width="${width}" height="${height}" fill="#fff"/>`;
+
+  // Strings (vertical)
+  for (let i = 0; i < 6; i++) {
+    const x = 10 + i * 8;
+    svg += `<line x1="${x}" y1="20" x2="${x}" y2="70" stroke="#555" stroke-width="1"/>`;
+  }
+
+  // Frets (horizontal)
+  for (let f = 0; f <= fretCount; f++) {
+    const y = 20 + f * 10;
+    if (f === 0 && !showFretNumber) {
+      // Thick nut for open-position chords
+      svg += `<line x1="10" y1="${y}" x2="50" y2="${y}" stroke="#000" stroke-width="3"/>`;
+    } else {
+      svg += `<line x1="10" y1="${y}" x2="50" y2="${y}" stroke="#555" stroke-width="1"/>`;
+    }
+  }
+
+  // Fret number indicator (for high-position chords)
+  if (showFretNumber) {
+    const textY = 30;
+    svg += `<text x="2" y="${textY}" font-size="8" fill="#555" font-family="monospace">${minFret}</text>`;
+  }
+
+  // Dots / open / muted strings
+  frets.forEach((fret, i) => {
+    const x = 10 + i * 8;
+    if (fret === 'x') {
+      svg += `<text x="${x}" y="15" font-size="6" text-anchor="middle">x</text>`;
+    } else if (fret === 0) {
+      svg += `<circle cx="${x}" cy="15" r="2" fill="#fff" stroke="#333"/>`;
+    } else {
+      const relativeFret = fret - shiftBase;
+      const y = 20 + relativeFret * 10 - 5;
+      svg += `<circle cx="${x}" cy="${y}" r="3" fill="#333"/>`;
+    }
+  });
+
+  svg += `<text x="${width / 2}" y="78" font-size="8" text-anchor="middle">${name}</text>`;
+  svg += `</svg>`;
+  return svg;
+}
+
+// Extract chords from rendered output (HTML already parsed)
+// 🎵 Extract chords from rendered output (detects <span class="chord-strong"> tags)
+function extractChordsFromOutput() {
+  const spans = document.querySelectorAll('#outputArea .chord-strong');
+  const chords = new Set();
+  spans.forEach(span => {
+    const raw = span.textContent.trim();
+    // Handle multi-chord tokens like "C G" inside one span
+    raw.split(/\s+/).forEach(ch => {
+      if (/^[A-G][#b]?(m|maj7|m7|7|sus2|sus4|5)?(\/[A-G][#b]?)?$/.test(ch)) {
+        chords.add(ch);
+      }
+    });
+  });
+  return Array.from(chords);
+}
+// Render all detected guitar chord diagrams
+function renderChordLegend() {
+  const legend = document.getElementById('chordLegend');
+  const chords = extractChordsFromOutput();
+  const view = document.getElementById('chordViewSelect').value;
+
+  if (!chords.length) {
+    legend.innerHTML = '<em>No chords detected.</em>';
+    return;
+  }
+
+  const makeGuitar = ch => {
+    const base = GUITAR_CHORDS[ch];
+    return base
+      ? `<div>${drawGuitarChord(ch, base)}</div>`
+      : `<div style="width:60px;height:80px;text-align:center;font-size:10px;color:#888;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;">${ch}</div>`;
+  };
+
+  const makeKeyboard = ch => {
+    const base = KEYBOARD_CHORDS[ch];
+    return base
+      ? `<div>${drawKeyboardChord(ch, base)}</div>`
+      : `<div style="width:120px;height:50px;text-align:center;font-size:10px;color:#888;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;">${ch}</div>`;
+  };
+
+  let html = '';
+  if (view === 'guitar') {
+    html += `<h3>Chord Legend (Guitar)</h3><div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;">${chords.map(makeGuitar).join('')}</div>`;
+  } else if (view === 'keyboard') {
+    html += `<h3>Chord Legend (Keyboard)</h3><div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;">${chords.map(makeKeyboard).join('')}</div>`;
+  } else if (view === 'both') {
+    html += `<h3>Chord Legend (Guitar + Keyboard)</h3>`;
+    html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:10px;">${chords.map(makeGuitar).join('')}</div>`;
+    html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;border-top:1px solid #ddd;padding-top:10px;">${chords.map(makeKeyboard).join('')}</div>`;
+  }
+
+  legend.innerHTML = html;
+}
+
+/* Toggle chord legend visibility */
+document.getElementById('showChordsToggle').addEventListener('change', function() {
+document.getElementById('chordViewSelect').addEventListener('change', () => {
+  const toggle = document.getElementById('showChordsToggle');
+  if (toggle.checked) renderChordLegend();
+});
+  const legend = document.getElementById('chordLegend');
+  if (this.checked) {
+    legend.style.display = 'block';
+    renderChordLegend();
+  } else {
+    legend.style.display = 'none';
+    legend.innerHTML = '';
+  }
+});
+document.getElementById('keySelect').addEventListener('change',render);
+/* 🧩 Capo dropdown — updates the {capo: n} tag automatically */
+document.getElementById('capoSelect').addEventListener('change', function(){
+  const textArea = document.getElementById('source');
+  let text = textArea.value;
+
+  const capoValue = parseInt(this.value, 10);
+  if (isNaN(capoValue)) return;
+
+  // If a {capo: ...} tag already exists, replace it
+  if (/\{capo:\s*\d+\}/i.test(text)) {
+    text = text.replace(/\{capo:\s*\d+\}/i, `{capo: ${capoValue}}`);
+  } else {
+    // If missing, insert one right after the {key: ...} line if found
+    if (/\{key:\s*[A-G][#b]?m?\}/i.test(text)) {
+      text = text.replace(/\{key:\s*[A-G][#b]?m?\}/i, match => `${match}\n{capo: ${capoValue}}`);
+    } else {
+      // Otherwise, just add to the top
+      text = `{capo: ${capoValue}}\n` + text;
+    }
+  }
+
+  textArea.value = text;
+  render();  // Immediately re-render with new capo
+});
+
+window.addEventListener('resize',()=>requestAnimationFrame(()=>autoFit()));
+
+document.getElementById('downloadCho').addEventListener('click',()=>{
+  const text=document.getElementById('source').value||'';
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  let name='song'; const m=text.match(/\{title:\s*(.+?)\}/i);
+  if(m) name=m[1].trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'_');
+  a.download=name+'.cho'; a.click(); URL.revokeObjectURL(a.href);
+});
+/* ✅ Fixed Share Link — robust copy + safe encoding for all hosts */
+console.log("✅ Share Link button found and script attached");
+document.getElementById('shareLink').addEventListener('click', ()=>{
+  const text = document.getElementById('source').value || '';
+  const compressed = LZString.compressToBase64(text);
+  const encoded = encodeURIComponent(compressed); // URI safe
+  const url = `${location.origin}/go/?s=${encoded}`;
+
+  const inIframe = (window.self !== window.top);
+
+  // Try clipboard first
+  if (navigator.clipboard && !inIframe) {
+    navigator.clipboard.writeText(url)
+      .then(()=>alert('✅ Share link copied to clipboard!'))
+      .catch(()=>prompt('Copy this link manually:', url));
+  } else {
+    prompt('Copy this link manually:', url);
+  }
+});
+
+  /* 👁 Share Viewer Link — view-only version */
+document.getElementById('shareViewerBtn')?.addEventListener('click', ()=>{
+  const text = document.getElementById('source').value || '';
+  const compressed = LZString.compressToBase64(text);
+  const encoded = encodeURIComponent(compressed); // URI safe
+  const viewerUrl = `${location.origin}/go/?s=${encoded}&v=1`;
+
+  const inIframe = (window.self !== window.top);
+
+  if (navigator.clipboard && !inIframe) {
+    navigator.clipboard.writeText(viewerUrl)
+      .then(()=>alert('👁 Viewer link copied!'))
+      .catch(()=>prompt('Copy this viewer link manually:', viewerUrl));
+  } else {
+    prompt('Copy this viewer link manually:', viewerUrl);
+  }
+});
+
+/* Export PDF / Print — include chord diagrams if visible */
+document.getElementById('exportPdf').addEventListener('click',()=>{
+  const viewerEl = document.getElementById('outputArea');
+  const chordLegendEl = document.getElementById('chordLegend');
+  let content = viewerEl.innerHTML;
+
+  // ✅ Include chord diagrams if they’re visible
+  if (chordLegendEl && chordLegendEl.style.display !== 'none') {
+    content += `<div style="margin-top:20px;">${chordLegendEl.innerHTML}</div>`;
+  }
+
+  const hasTwoCols = viewerEl.classList.contains('two-col');
+  const styles = Array.from(document.querySelectorAll('style')).map(s=>s.outerHTML).join('\n');
+  const printWindow = window.open("", "_blank", "width=900,height=1100");
+  const viewerClass = `viewer${hasTwoCols?' two-col':''}`;
+
+  printWindow.document.write(`
+    <!doctype html><html><head><meta charset="utf-8">
+    <title>Print Song</title>${styles}
+    <style>
+      body{margin:0;background:white;}
+      @page{size:Letter;margin:12mm;}
+      .viewer{padding:var(--viewer-pad);background:#fff;box-shadow:none}
+      .chord-legend{page-break-before:always;}
+    </style>
+    </head><body><div class="${viewerClass}">${content}</div>
+    <script>
+      try{document.querySelector('.viewer').style.printColorAdjust='exact';}catch(e){}
+      window.addEventListener('load',()=>setTimeout(()=>{window.print();window.close();},150));
+    <\/script>
+    </body></html>
+  `);
+
+  printWindow.document.close();
+printWindow.focus();
+});
+/* Init */
+(function init(){
+  const s=document.getElementById('keySelect');
+  s.innerHTML='<option value="">(original)</option>';
+  for(const k of MAJOR_KEYS){
+    const o=document.createElement('option');
+    o.value=k; o.textContent=k;
+    s.appendChild(o);
+  }
+  const sep=document.createElement('option');
+  sep.disabled=true;
+  sep.textContent='── minor keys ──';
+  s.appendChild(sep);
+  for(const k of MAJOR_KEYS){
+    const o=document.createElement('option');
+    o.value=k+'m'; o.textContent=k+'m';
+    s.appendChild(o);
+  }
+
+  const params = new URLSearchParams(location.search);
+const songParam = params.get('song') || params.get('s');
+  const isViewMode = params.get('v') === '1';
+
+    console.log('👁 View mode:', isViewMode);
+  
+if (songParam) {
+  let base64 = songParam;
+
+  // Normalize URL-safe characters
+  base64 = base64.replace(/ /g, '+');
+
+  let decoded = '';
+  try {
+    decoded = decodeURIComponent(base64);
+  } catch {
+    decoded = base64;
+  }
+
+  let decompressed = '';
+  try {
+    decompressed = LZString.decompressFromBase64(decoded) || '';
+  } catch {
+    decompressed = '';
+  }
+
+  document.getElementById('source').value = decompressed || decoded || '';
+}
+
+
+  // 🎸 Sync Capo dropdown with {capo: n} tag when loading
+  const textArea = document.getElementById('source');
+  const capoMatch = textArea.value.match(/\{capo:\s*(\d+)\s*\}/i);
+  const capoSelect = document.getElementById('capoSelect');
+  if (capoMatch && capoSelect) {
+    const capoVal = parseInt(capoMatch[1], 10);
+    capoSelect.value = isNaN(capoVal) ? '0' : capoVal.toString();
+  } else {
+    capoSelect.value = '0';  // default
+  }
+  if (isViewMode) {
+  document.body.classList.add('view-only');
+  document.querySelectorAll('.editor-only').forEach(el => {
+    el.style.display = 'none';
+  });
+}
+/* 👁 Viewer defaults: show chords + both views */
+if (isViewMode) {
+  const showChordsToggle = document.getElementById('showChordsToggle');
+  const chordViewSelect = document.getElementById('chordViewSelect');
+
+  if (showChordsToggle && chordViewSelect) {
+    // Enable chord legend
+    showChordsToggle.checked = true;
+
+    // Default to Guitar + Keyboard
+    chordViewSelect.value = 'both';
+
+    // Render chord legend after first render
+    setTimeout(() => {
+      renderChordLegend();
+      document.getElementById('chordLegend').style.display = 'block';
+    }, 0);
+  }
+}
+  
+  render();
+// 🧩 Mobile header fix: ensure header starts at top after first render
+  setTimeout(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, 400);
+})()
+</script>
+
+
+</body></html>

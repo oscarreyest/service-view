@@ -1670,31 +1670,31 @@ printWindow.focus();
   }
 
   const params = new URLSearchParams(location.search);
-  const setParam = params.get('set');         // NEW: service set
-const songParam = params.get('song') || params.get('s');  // existing single-song support
-const isViewMode = params.get('v') === '1';
-
-const songParam = params.get('song') || params.get('s');
-  const isViewMode = params.get('v') === '1';
+const setParam = params.get('set');                 // service set
+const songParam = params.get('song') || params.get('s'); // single song
+const isViewMode = params.get('v') === '1';         // viewer mode
+console.log('👁 View mode:', isViewMode);
 
     console.log('👁 View mode:', isViewMode);
   
 // === 1) If we have a SETLIST, load it ===
+window.__SERVICE_SET__ = null;
+
 if (setParam) {
-  let decoded = '';
-  try { decoded = decodeURIComponent(setParam.replace(/ /g,'+')); } catch { decoded = setParam; }
+  let decoded = setParam;
+  try { decoded = decodeURIComponent(setParam.replace(/ /g, '+')); } catch (e) {}
 
   let json = '';
-  try { json = LZString.decompressFromBase64(decoded) || ''; } catch { json = ''; }
+  try { json = LZString.decompressFromBase64(decoded) || ''; } catch (e) { json = ''; }
 
   let list = [];
-  try { list = JSON.parse(json); } catch { list = []; }
+  try { list = JSON.parse(json); } catch (e) { list = []; }
 
   // list = [{title, serviceKey, cho}, ...]
   if (Array.isArray(list) && list.length) {
-    // Build one big "service source" by concatenating songs with separators
-    // We’ll render song-by-song below (so each song gets its own header)
     window.__SERVICE_SET__ = list;
+  } else {
+    console.warn("⚠️ setParam present but decoded list is empty/invalid");
   }
 }
 
@@ -1748,42 +1748,71 @@ if (isViewMode) {
   }
 }
   // If we loaded a set, render all songs stacked
+// If we loaded a set, render all songs stacked (safe: uses temp outputArea)
 if (window.__SERVICE_SET__) {
   const list = window.__SERVICE_SET__;
-  const out = document.getElementById('outputArea');
 
   // Force view-only behavior for service set links
   document.body.classList.add('view-only');
   document.querySelectorAll('.editor-only').forEach(el => el.style.display = 'none');
 
-  // Render each song using your existing pipeline by temporarily loading it into #source
-  out.innerHTML = '';
+  // Hide key + share controls for service set (optional but recommended)
+  document.getElementById('shareLink')?.style.setProperty('display','none','important');
+  document.getElementById('shareViewerBtn')?.style.setProperty('display','none','important');
+  document.getElementById('keySelect')?.style.setProperty('display','none','important');
+
+  // We'll render into a TEMP outputArea so render() doesn't erase the stacked result
+  const realOut = document.getElementById('outputArea');
+  const realId = realOut.id;
+  realOut.id = "outputAreaStack";
+
+  const tempOut = document.createElement('div');
+  tempOut.id = "outputArea"; // render() will target this
+  tempOut.style.display = "none";
+  document.body.appendChild(tempOut);
+
+  // Build stacked HTML
+  let stacked = "";
   for (let i = 0; i < list.length; i++) {
     const song = list[i];
+
+    // load song source
     document.getElementById('source').value = song.cho || '';
 
-    // set the dropdown to the chosen service key (if it exists)
+    // set chosen service key
     if (song.serviceKey) {
       const ks = document.getElementById('keySelect');
       if (ks) ks.value = song.serviceKey;
+    } else {
+      const ks = document.getElementById('keySelect');
+      if (ks) ks.value = "";
     }
 
-    render(); // this fills outputArea, so we capture it then append
+    render(); // writes into TEMP #outputArea
 
-    const block = document.createElement('div');
-    block.style.marginBottom = '18px';
-    block.innerHTML = document.getElementById('outputArea').innerHTML;
-
-    // add a subtle divider between songs
+    // capture temp result
+    stacked += `<div style="margin-bottom:18px;">${tempOut.innerHTML}</div>`;
     if (i < list.length - 1) {
-      block.innerHTML += `<div style="height:1px;background:#e5e7eb;margin:18px 0;"></div>`;
+      stacked += `<div style="height:1px;background:#e5e7eb;margin:18px 0;"></div>`;
     }
-
-    out.appendChild(block);
   }
+
+  // Put final stacked HTML into the real output area
+  realOut.innerHTML = stacked;
+
+  // Cleanup temp
+  tempOut.remove();
+  realOut.id = realId;
+
+  // Done. Don't fall through to single-song render below.
+  // (We'll return right after this in Step 4)
 }
 
+
+  if (!window.__SERVICE_SET__) {
   render();
+}
+
 // 🧩 Mobile header fix: ensure header starts at top after first render
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });

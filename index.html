@@ -1670,33 +1670,46 @@ printWindow.focus();
   }
 
   const params = new URLSearchParams(location.search);
+  const setParam = params.get('set');         // NEW: service set
+const songParam = params.get('song') || params.get('s');  // existing single-song support
+const isViewMode = params.get('v') === '1';
+
 const songParam = params.get('song') || params.get('s');
   const isViewMode = params.get('v') === '1';
 
     console.log('👁 View mode:', isViewMode);
   
-if (songParam) {
-  let base64 = songParam;
-
-  // Normalize URL-safe characters
-  base64 = base64.replace(/ /g, '+');
-
+// === 1) If we have a SETLIST, load it ===
+if (setParam) {
   let decoded = '';
-  try {
-    decoded = decodeURIComponent(base64);
-  } catch {
-    decoded = base64;
+  try { decoded = decodeURIComponent(setParam.replace(/ /g,'+')); } catch { decoded = setParam; }
+
+  let json = '';
+  try { json = LZString.decompressFromBase64(decoded) || ''; } catch { json = ''; }
+
+  let list = [];
+  try { list = JSON.parse(json); } catch { list = []; }
+
+  // list = [{title, serviceKey, cho}, ...]
+  if (Array.isArray(list) && list.length) {
+    // Build one big "service source" by concatenating songs with separators
+    // We’ll render song-by-song below (so each song gets its own header)
+    window.__SERVICE_SET__ = list;
   }
+}
+
+// === 2) Else fallback to single song like before ===
+if (!window.__SERVICE_SET__ && songParam) {
+  let base64 = songParam.replace(/ /g,'+');
+  let decoded = '';
+  try { decoded = decodeURIComponent(base64); } catch { decoded = base64; }
 
   let decompressed = '';
-  try {
-    decompressed = LZString.decompressFromBase64(decoded) || '';
-  } catch {
-    decompressed = '';
-  }
+  try { decompressed = LZString.decompressFromBase64(decoded) || ''; } catch { decompressed = ''; }
 
   document.getElementById('source').value = decompressed || decoded || '';
 }
+
 
 
   // 🎸 Sync Capo dropdown with {capo: n} tag when loading
@@ -1734,7 +1747,42 @@ if (isViewMode) {
     }, 0);
   }
 }
-  
+  // If we loaded a set, render all songs stacked
+if (window.__SERVICE_SET__) {
+  const list = window.__SERVICE_SET__;
+  const out = document.getElementById('outputArea');
+
+  // Force view-only behavior for service set links
+  document.body.classList.add('view-only');
+  document.querySelectorAll('.editor-only').forEach(el => el.style.display = 'none');
+
+  // Render each song using your existing pipeline by temporarily loading it into #source
+  out.innerHTML = '';
+  for (let i = 0; i < list.length; i++) {
+    const song = list[i];
+    document.getElementById('source').value = song.cho || '';
+
+    // set the dropdown to the chosen service key (if it exists)
+    if (song.serviceKey) {
+      const ks = document.getElementById('keySelect');
+      if (ks) ks.value = song.serviceKey;
+    }
+
+    render(); // this fills outputArea, so we capture it then append
+
+    const block = document.createElement('div');
+    block.style.marginBottom = '18px';
+    block.innerHTML = document.getElementById('outputArea').innerHTML;
+
+    // add a subtle divider between songs
+    if (i < list.length - 1) {
+      block.innerHTML += `<div style="height:1px;background:#e5e7eb;margin:18px 0;"></div>`;
+    }
+
+    out.appendChild(block);
+  }
+}
+
   render();
 // 🧩 Mobile header fix: ensure header starts at top after first render
   setTimeout(() => {

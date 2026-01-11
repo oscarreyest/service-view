@@ -362,6 +362,41 @@ body.view-only #outputArea {
     font-size: 11px !important;
   }
 }
+  /* ===== Service Set song separators ===== */
+.song-start{
+  -webkit-column-span: all;
+  column-span: all;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin: 18px 0 10px;
+}
+
+.song-divider{
+  -webkit-column-span: all;
+  column-span: all;
+  height: 1px;
+  background: #e5e7eb;
+  margin: 14px 0 18px;
+}
+
+.song-body{
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Optional: make each song start in a NEW COLUMN on screen */
+body.service-set .song-start{
+  break-before: column;
+}
+
+/* Print behavior: force each song to start on a NEW PAGE (one song per page) */
+@media print{
+  body.service-set .song-start{
+    break-before: page;
+    page-break-before: always;
+  }
+}
+
 
 /* Optional — better badge behavior on small phones */
 @media (max-width: 480px) {
@@ -1790,11 +1825,32 @@ if (window.__SERVICE_SET__) {
 
     render(); // writes into TEMP #outputArea
 
-    // capture temp result
-    stacked += `<div style="margin-bottom:18px;">${tempOut.innerHTML}</div>`;
-    if (i < list.length - 1) {
-      stacked += `<div style="height:1px;background:#e5e7eb;margin:18px 0;"></div>`;
-    }
+// --- Split header vs body so header can span both columns ---
+const tmpDoc = document.createElement('div');
+tmpDoc.innerHTML = tempOut.innerHTML;
+
+const headerEl = tmpDoc.querySelector('.header-box');
+let headerHtml = '';
+if (headerEl) {
+  headerHtml = headerEl.outerHTML;
+  headerEl.remove(); // remaining becomes "body"
+}
+const bodyHtml = tmpDoc.innerHTML;
+
+// Full-width header + normal-flow body
+stacked += `
+  <div class="song-start">
+    ${headerHtml}
+  </div>
+  <div class="song-body">
+    ${bodyHtml}
+  </div>
+`;
+
+if (i < list.length - 1) {
+  stacked += `<div class="song-divider"></div>`;
+}
+
   }
 
   // Put final stacked HTML into the real output area

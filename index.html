@@ -977,6 +977,10 @@ function render(){
     const capoVal = parseInt(capoMatch[1], 10);
     if (!isNaN(capoVal) && capoVal >= 0 && capoVal <= 12) capoShift = capoVal;
   }
+  // ✅ If Service Set mode is using a global capo override
+  if (window.__SERVICE_SET__ && typeof window.__GLOBAL_CAPO__ === 'number') {
+    capoShift = window.__GLOBAL_CAPO__;
+  }
 
   // Combine normal key transposition and capo offset:
   // Chords are transposed by (key transpose - capo semitones)
@@ -1036,7 +1040,15 @@ document.getElementById('capoSelect').addEventListener('change', function(){
   }
 
   textArea.value = text;
-  render();  // Immediately re-render with new capo
+    // If we’re viewing a SERVICE SET, rebuild the stacked view instead of single render()
+  if (window.__SERVICE_SET__) {
+    window.__GLOBAL_CAPO__ = capoValue;   // store global capo for the set
+    renderServiceSet();
+    return;
+  }
+
+  render(); // normal single-song behavior
+
 });
 
 window.addEventListener('resize',()=>requestAnimationFrame(()=>autoFit()));
@@ -1117,6 +1129,48 @@ document.getElementById('exportPdf').addEventListener('click',()=>{
   printWindow.document.close();
 printWindow.focus();
 });
+  function renderServiceSet(){
+  const list = window.__SERVICE_SET__;
+  if(!Array.isArray(list) || !list.length) return;
+
+  // Use the real output container (the one that holds the stacked result)
+  const realOut = document.getElementById('outputAreaStack') || document.getElementById('outputArea');
+  if(!realOut) return;
+
+  // TEMP output area so render() doesn’t wipe the stacked result
+  const tempOut = document.createElement('div');
+  tempOut.id = "outputArea";
+  tempOut.style.display = "none";
+  document.body.appendChild(tempOut);
+
+  const src = document.getElementById('source');
+  const savedSource = src ? src.value : '';
+
+  let stacked = "";
+  for(let i=0; i<list.length; i++){
+    const song = list[i];
+
+    if(src) src.value = song.cho || '';
+
+    // Set chosen service key (if you’re keeping per-song key logic)
+    const ks = document.getElementById('keySelect');
+    if(ks) ks.value = song.serviceKey || "";
+
+    render(); // writes into TEMP #outputArea
+
+    stacked += `<div style="margin-bottom:18px;">${tempOut.innerHTML}</div>`;
+    if(i < list.length - 1){
+      stacked += `<div style="height:1px;background:#e5e7eb;margin:18px 0;"></div>`;
+    }
+  }
+
+  // Cleanup temp
+  tempOut.remove();
+  if(src) src.value = savedSource;
+
+  // Write stacked
+  realOut.innerHTML = stacked;
+}
 /* Init */
 (function init(){
   const s=document.getElementById('keySelect');

@@ -433,49 +433,8 @@ body.service-set .song-start{
         ChordPro source
       </label>
 
-      <textarea id="source">{start_header}
-{title: Sample Song}
-{subtitle: Versión IB Nueva Esperanza RVA}
-{artist: Demo Band}
-{key: C}
-{time: 4/4}
-{tempo: 60}
-{capo: 0}
-{comment_box: Key changed to: [C]}
-{section_list: I, V1, C, B, Inst, S, O}
-{end_header}
+      <textarea id="source"></textarea>
 
-{comment: Intro}
-[C]    [F]    [C]    [G]
-
-{comment: Verse 1}
-[C] This is the [F] verse that tells a [C] story  
-And leads us [G] right along the way
-
-{comment: Verse 2}
-[C] Every [Am] word is here to [F] show  
-[G] The ChordPro [C] display
-
-{start_of_chorus}
-[F] Sing out loud, let your [C] heart rejoice  
-[G] Every chord and [Am] every voice
-{end_of_chorus}
-
-{start_of_bridge}
-[C]    [F]    [G]    [C]
-{end_of_bridge}
-        
-{start_of_instrumental}
-[C]    [F]    [G]    [C]
-{end_of_instrumental}
-
-{start_of_solo}
-[C] Guitar [Am] Solo [F] [G]
-{end_of_solo}
-
-{comment: Outro}
-[C]     [F]     [C]     [G]     [C]
-</textarea>
     </div>
 
           <div class="controls no-print">
@@ -1209,10 +1168,15 @@ if (setParam) {
 
   // list = [{title, serviceKey, cho}, ...]
   if (Array.isArray(list) && list.length) {
-    window.__SERVICE_SET__ = list;
-  } else {
-    console.warn("⚠️ setParam present but decoded list is empty/invalid");
-  }
+  window.__SERVICE_SET__ = list;
+
+  // 🔑 IMPORTANT: render service set immediately
+  document.body.classList.add('service-set');
+  renderServiceSet();
+  return; // ⛔ STOP init here — do NOT fall through
+} else {
+  console.warn("⚠️ setParam present but decoded list is empty/invalid");
+}
 }
 
 // === 2) Else fallback to single song like before ===
@@ -1271,9 +1235,6 @@ if (isViewMode) {
 }
 
 
-  if (!window.__SERVICE_SET__) {
-  render();
-}
 
 // 🧩 Mobile header fix: ensure header starts at top after first render
   setTimeout(() => {

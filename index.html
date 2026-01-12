@@ -3,161 +3,218 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Service Charts – IB Nueva Esperanza RVA</title>
-
-<!-- ✅ Reuse your existing styles -->
-<link rel="stylesheet" href="../shared/chart-styles.css" />
+<title>Service View</title>
 
 <style>
-/* ===============================
-   SERVICE VIEW OVERRIDES ONLY
-   =============================== */
-
-body {
+/* === REUSE VISUAL STYLES (copied from editor/viewer) === */
+body{
+  margin:0;
   background:#fff;
+  font-family:Georgia,"Times New Roman",serif;
+  color:#111;
 }
 
-header,
-footer {
-  display:none;
-}
-
-/* Lock UI */
-.controls,
-.editor-only,
-#keySelect,
-#shareLink,
-#shareViewerBtn,
-#downloadCho,
-#chordLegend,
-#showChordsToggle,
-#chordViewSelect {
-  display:none !important;
-}
-
-/* Service container */
-#serviceOutput {
+.wrap{
   max-width:900px;
-  margin:0 auto;
+  margin:24px auto;
+  padding:12px;
 }
 
-/* Song separation */
-.song-start {
-  column-span: all;
-  break-inside: avoid;
-  margin: 20px 0 12px;
+.viewer{
+  column-count:2;
+  column-gap:8mm;
 }
 
-/* Print: one song per page */
-@media print {
-  .song-start {
-    page-break-before: always;
-  }
-  .viewer {
-    column-count: 2;
-    column-gap: 8mm;
-  }
+.header-box{
+  column-span:all;
+  -webkit-column-span:all;
+  border:1px solid #dce2ea;
+  border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:16px;
+  text-align:center;
+}
+
+.section-box{
+  border:1px solid #dce2ea;
+  border-radius:12px;
+  margin:12px 0;
+  break-inside:auto;
+  page-break-inside:auto;
+}
+
+.section-head{
+  padding:14px 16px 4px 16px;
+  position:relative;
+}
+
+.section-title{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-weight:700;
+  color:#1f6feb;
+}
+
+.section-body{
+  padding:0 16px 10px 16px;
+}
+
+pre{
+  font-family:"Courier New",Courier,monospace;
+  font-size:16px;
+  line-height:1.3;
+  margin:2px 0;
+  white-space:pre;
+}
+
+.service-break{
+  break-after:page;
+  page-break-after:always;
+  height:0;
+}
+
+/* Print */
+@media print{
+  body{margin:12mm;}
+  .viewer{column-gap:8mm;}
+  @page{size:Letter;margin:12mm;}
 }
 </style>
 </head>
 
-<body>
+<body class="service-view">
+<div class="wrap">
+  <div id="serviceOutput" class="viewer"></div>
+</div>
 
-<div id="serviceOutput" class="viewer"></div>
-
-<!-- LZString -->
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 
 <script>
-/* ===============================
-   CORE HELPERS (ISOLATED)
-   =============================== */
+/* ================= PURE HELPERS (copied safely) ================= */
 
-function decodeServiceSet() {
-  const params = new URLSearchParams(location.search);
-  const setParam = params.get('set');
-  if (!setParam) return null;
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT_EQ={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
 
-  try {
-    const decoded = decodeURIComponent(setParam.replace(/ /g,'+'));
-    const json = LZString.decompressFromBase64(decoded);
-    const list = JSON.parse(json);
-    return Array.isArray(list) ? list : null;
-  } catch {
-    return null;
-  }
+function normalizeKey(k){
+  if(!k) return null;
+  const m=k.trim().match(/^([A-G])([#b]?)(m?)$/i);
+  if(!m) return null;
+  let r=m[1].toUpperCase(), a=m[2]||'', min=m[3]?'m':'';
+  let full=r+a;
+  if(FLAT_EQ[full]) full=FLAT_EQ[full];
+  return full+min;
 }
 
-/* ===============================
-   PURE RENDERER
-   =============================== */
+function computeSemitoneDiff(a,b){
+  const na=normalizeKey(a), nb=normalizeKey(b);
+  if(!na||!nb) return 0;
+  const i1=NOTES.indexOf(na.replace(/m$/,'')),
+        i2=NOTES.indexOf(nb.replace(/m$/,''));
+  let d=i2-i1;
+  if(d>6)d-=12;
+  if(d<-6)d+=12;
+  return d;
+}
 
-function renderSongFromCho(choText, serviceKey, globalCapo) {
-  // We reuse your existing render logic via a sandbox iframe-like approach:
-  // create a temp container, inject cho, render once, extract HTML
+function applyTransposeToText(text,steps){
+  return text.replace(/\[([^\]]+)\]/g,(_,ch)=>
+    '['+ch.split(/\s+/).map(t=>{
+      const m=t.match(/^([A-G])([#b])?(.*)$/);
+      if(!m) return t;
+      let full=m[1]+(m[2]||'');
+      if(FLAT_EQ[full]) full=FLAT_EQ[full];
+      let i=NOTES.indexOf(full);
+      if(i<0) return t;
+      let ni=(i+steps)%12; if(ni<0) ni+=12;
+      return NOTES[ni]+(m[3]||'');
+    }).join(' ')+']'
+  );
+}
 
-  const temp = document.createElement('div');
-  temp.style.display = 'none';
-  document.body.appendChild(temp);
+function splitHeaderBlock(raw){
+  const s=raw.indexOf('{start_header}'),
+        e=raw.indexOf('{end_header}');
+  if(s!==-1 && e!==-1 && e>s){
+    return {
+      header:raw.slice(s+15,e),
+      body:raw.slice(0,s)+raw.slice(e+13),
+      hasExplicit:true
+    };
+  }
+  return {header:null,body:raw,hasExplicit:false};
+}
 
-  temp.innerHTML = `
-    <textarea id="__src">${choText}</textarea>
-    <div id="__out" class="viewer"></div>
-  `;
+function parseMetaFields(text){
+  const g=t=>{const m=text.match(new RegExp(`\\{${t}:\\s*(.*?)\\}`,'i'));return m?m[1]:null;}
+  return{title:g('title'),subtitle:g('subtitle'),key:g('key')};
+}
 
-  // Minimal transpose
-  const src = temp.querySelector('#__src').value;
-  const out = temp.querySelector('#__out');
-
-  // NOTE: This assumes your shared render logic is available globally
-  // If your renderer lives in a shared JS file, this will still work.
-
-  window.__SERVICE_RENDER__({
-    source: src,
-    output: out,
-    key: serviceKey,
-    capo: globalCapo
-  });
-
-  const html = out.innerHTML;
-  temp.remove();
+function renderHeaderRaw(header,meta,serviceKey){
+  let html='<div class="header-box">';
+  if(header){
+    header.split('\n').forEach(l=>{
+      const m=l.match(/^\{([^:}]+):\s*(.*?)\}$/);
+      if(!m) return;
+      if(m[1]==='title') html+=`<h2>${m[2]}</h2>`;
+      if(m[1]==='subtitle') html+=`<div><em>${m[2]}</em></div>`;
+    });
+  }else if(meta){
+    if(meta.title) html+=`<h2>${meta.title}</h2>`;
+    if(meta.subtitle) html+=`<div><em>${meta.subtitle}</em></div>`;
+  }
+  if(serviceKey){
+    html+=`<div style="margin-top:6px;font-size:14px;color:#666">Key: ${serviceKey}</div>`;
+  }
+  html+='</div>';
   return html;
 }
 
-/* ===============================
-   SERVICE SET RENDER
-   =============================== */
-
-function renderServiceSet(list) {
-  const root = document.getElementById('serviceOutput');
-  root.innerHTML = '';
-
-  const globalCapo = 0; // future-proof, pedal-ready
-
-  list.forEach((song, i) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'song-start';
-    wrap.innerHTML = renderSongFromCho(song.cho, song.serviceKey, globalCapo);
-    root.appendChild(wrap);
-  });
+function parseChordProBody(text){
+  return text.split('\n').map(l=>{
+    if(!l.trim()) return '';
+    if(l.startsWith('{comment')){
+      return `<div class="section-box"><div class="section-head"><div class="section-title">${l.replace(/\{.*?:|\}/g,'')}</div></div></div>`;
+    }
+    return `<pre>${l}</pre>`;
+  }).join('');
 }
 
-/* ===============================
-   INIT
-   =============================== */
+/* ================= SERVICE RENDERER ================= */
 
-(function init(){
-  const set = decodeServiceSet();
+function renderSong(rawText,serviceKey){
+  const m=rawText.match(/\{key:\s*([A-G][#b]?m?)\}/i);
+  const originalKey=m?m[1]:null;
+  const steps=(originalKey&&serviceKey)?computeSemitoneDiff(originalKey,serviceKey):0;
 
-  if (!set || !set.length) {
-    document.getElementById('serviceOutput').innerHTML =
-      '<p style="text-align:center;color:#888">No service loaded.</p>';
-    return;
-  }
+  const {header,body,hasExplicit}=splitHeaderBlock(rawText);
+  const meta=parseMetaFields(rawText);
 
-  renderServiceSet(set);
-})();
+  const bodyT=applyTransposeToText(body,steps);
+  return `
+    ${renderHeaderRaw(header,hasExplicit?null:meta,serviceKey)}
+    ${parseChordProBody(bodyT)}
+  `;
+}
+
+/* ================= LOAD FROM URL ================= */
+
+const params=new URLSearchParams(location.search);
+const setParam=params.get('set');
+if(!setParam){
+  document.getElementById('serviceOutput').innerHTML='<p>No service set.</p>';
+}else{
+  const decoded=LZString.decompressFromBase64(decodeURIComponent(setParam));
+  const SERVICE_SET=JSON.parse(decoded);
+
+  const out=document.getElementById('serviceOutput');
+  out.innerHTML='';
+
+  SERVICE_SET.forEach((song,i)=>{
+    out.innerHTML+=renderSong(song.cho,song.key);
+    if(i<SERVICE_SET.length-1){
+      out.innerHTML+='<div class="service-break"></div>';
+    }
+  });
+}
 </script>
-
 </body>
 </html>

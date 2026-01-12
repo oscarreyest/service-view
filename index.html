@@ -1020,36 +1020,32 @@ document.getElementById('render').addEventListener('click',render);
 
 /* 🧩 Capo dropdown — updates the {capo: n} tag automatically */
 document.getElementById('capoSelect').addEventListener('change', function(){
-  const textArea = document.getElementById('source');
-  let text = textArea.value;
-
   const capoValue = parseInt(this.value, 10);
   if (isNaN(capoValue)) return;
 
-  // If a {capo: ...} tag already exists, replace it
-  if (/\{capo:\s*\d+\}/i.test(text)) {
-    text = text.replace(/\{capo:\s*\d+\}/i, `{capo: ${capoValue}}`);
-  } else {
-    // If missing, insert one right after the {key: ...} line if found
-    if (/\{key:\s*[A-G][#b]?m?\}/i.test(text)) {
-      text = text.replace(/\{key:\s*[A-G][#b]?m?\}/i, match => `${match}\n{capo: ${capoValue}}`);
-    } else {
-      // Otherwise, just add to the top
-      text = `{capo: ${capoValue}}\n` + text;
-    }
-  }
-
-  textArea.value = text;
-    // If we’re viewing a SERVICE SET, rebuild the stacked view instead of single render()
+  // 🎸 SERVICE SET MODE — global capo only
   if (window.__SERVICE_SET__) {
-    window.__GLOBAL_CAPO__ = capoValue;   // store global capo for the set
+    window.__GLOBAL_CAPO__ = capoValue;
     renderServiceSet();
     return;
   }
 
-  render(); // normal single-song behavior
+  // 🎵 SINGLE SONG MODE — write capo into source
+  const textArea = document.getElementById('source');
+  let text = textArea.value;
 
+  if (/\{capo:\s*\d+\}/i.test(text)) {
+    text = text.replace(/\{capo:\s*\d+\}/i, `{capo: ${capoValue}}`);
+  } else if (/\{key:\s*[A-G][#b]?m?\}/i.test(text)) {
+    text = text.replace(/\{key:\s*[A-G][#b]?m?\}/i, m => `${m}\n{capo: ${capoValue}}`);
+  } else {
+    text = `{capo: ${capoValue}}\n` + text;
+  }
+
+  textArea.value = text;
+  render();
 });
+
 
 window.addEventListener('resize',()=>requestAnimationFrame(()=>autoFit()));
 
@@ -1268,83 +1264,7 @@ if (isViewMode) {
     }, 0);
   }
 }
-  // If we loaded a set, render all songs stacked
-// If we loaded a set, render all songs stacked (safe: uses temp outputArea)
-if (window.__SERVICE_SET__) {
-  const list = window.__SERVICE_SET__;
-
-  // Force view-only behavior for service set links
-  document.body.classList.add('view-only');
-  document.querySelectorAll('.editor-only').forEach(el => el.style.display = 'none');
-
-  // Hide key + share controls for service set (optional but recommended)
-  document.getElementById('shareLink')?.style.setProperty('display','none','important');
-  document.getElementById('shareViewerBtn')?.style.setProperty('display','none','important');
-  document.getElementById('keySelect')?.style.setProperty('display','none','important');
-
-  // We'll render into a TEMP outputArea so render() doesn't erase the stacked result
-  const realOut = document.getElementById('outputArea');
-  const realId = realOut.id;
-  realOut.id = "outputAreaStack";
-
-  const tempOut = document.createElement('div');
-  tempOut.id = "outputArea"; // render() will target this
-  tempOut.style.display = "none";
-  document.body.appendChild(tempOut);
-
-  // Build stacked HTML
-  let stacked = "";
-  for (let i = 0; i < list.length; i++) {
-    const song = list[i];
-
-    // load song source
-    document.getElementById('source').value = song.cho || '';
-
-    // set chosen service key
-    if (song.serviceKey) {
-      const ks = document.getElementById('keySelect');
-      if (ks) ks.value = song.serviceKey;
-    } else {
-      const ks = document.getElementById('keySelect');
-      if (ks) ks.value = "";
-    }
-
-    render(); // writes into TEMP #outputArea
-
-// --- Split header vs body so header can span both columns ---
-const tmpDoc = document.createElement('div');
-tmpDoc.innerHTML = tempOut.innerHTML;
-
-const headerEl = tmpDoc.querySelector('.header-box');
-let headerHtml = '';
-if (headerEl) {
-  headerHtml = headerEl.outerHTML;
-  headerEl.remove(); // remaining becomes "body"
-}
-const bodyHtml = tmpDoc.innerHTML;
-
-// Full-width header + normal-flow body
-stacked += `
-  <div class="song-start">
-    ${headerHtml}
-  </div>
-  <div class="song-body">
-    ${bodyHtml}
-  </div>
-`;
-
-if (i < list.length - 1) {
-  stacked += `<div class="song-divider"></div>`;
-}
-
-  }
-
-  // Put final stacked HTML into the real output area
-  realOut.innerHTML = stacked;
-
-  // Cleanup temp
-  tempOut.remove();
-  realOut.id = realId;
+  
 
   // Done. Don't fall through to single-song render below.
   // (We'll return right after this in Step 4)

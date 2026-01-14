@@ -3,193 +3,690 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Service View – IB Nueva Esperanza RVA</title>
+<title>Service View — IB Nueva Esperanza RVA</title>
 
-<!-- 🔒 Styles reused EXACTLY from Chart Editor -->
 <style>
-:root{
-  --page-bg:#f7f8fa; --card-bg:#ffffff; --muted:#6b7280; --accent:#1f6feb;
-  --generic-bg:#f8f9fa; --verse-bg:#f3fdf3; --chorus-bg:#eef6ff;
-  --bridge-bg:#fffbea; --intro-bg:#f9f5ff; --interlude-bg:#faf5ff;
-  --outro-bg:#f8f5f9; --medley-bg:#f9f5ff;
-  --instrumental-bg:#f3fdfd; --solo-bg:#fff8f0;
+  :root{
+    /* Base palette */
+    --page-bg:#f7f8fa; --card-bg:#ffffff; --muted:#6b7280; --accent:#1f6feb;
 
-  --generic-ac:#cfd8dc; --verse-ac:#81c784; --chorus-ac:#64b5f6;
-  --bridge-ac:#f6d860; --intro-ac:#b39ddb; --interlude-ac:#ce93d8;
-  --outro-ac:#b39ddb; --medley-ac:#ba68c8;
-  --instrumental-ac:#4db6ac; --solo-ac:#ffb74d;
+    /* Screen tints for sections */
+    --generic-bg:#f8f9fa;
+    --verse-bg:#f3fdf3;
+    --prechorus-bg:#fff4e0;
+    --prechorus-ac:#ffb74d;
+    --chorus-bg:#eef6ff;
+    --bridge-bg:#fffbea;
+    --intro-bg:#f9f5ff;
+    --interlude-bg:#faf5ff;
+    --outro-bg:#f8f5f9;
+    --medley-bg:#f9f5ff;
+    --instrumental-bg:#f3fdfd;
+    --solo-bg:#fff8f0;
 
-  --lyric-size:16px; --chord-size:17px; --section-title:16px;
-  --meta-size:14px; --badge-font:12px;
-  --title-size:32px; --subtitle-size:18px;
-  --viewer-pad:24px; --column-gap:8mm;
-}
+    /* Accents for badges/lines */
+    --generic-ac:#cfd8dc;
+    --verse-ac:#81c784;
+    --chorus-ac:#64b5f6;
+    --bridge-ac:#f6d860;
+    --intro-ac:#b39ddb;
+    --interlude-ac:#ce93d8;
+    --outro-ac:#b39ddb;
+    --medley-ac:#ba68c8;
+    --instrumental-ac:#4db6ac;
+    --solo-ac:#ffb74d;
 
-html,body{
-  margin:0;background:var(--page-bg);
-  font-family:Georgia,"Times New Roman",serif;color:#111
-}
+    /* Typography */
+    --lyric-size:16px; --chord-size:17px; --pre-line:1.6;
+    --section-title:16px; --meta-size:14px; --badge-font:12px;
+    --title-size:32px; --subtitle-size:18px;
 
-.viewer{
-  max-width:900px;
-  margin:24px auto;
-  padding:var(--viewer-pad);
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,.08);
-}
+    /* Layout */
+    --viewer-pad:24px; --column-gap:8mm; --header-gap:10px; --pre-margin:8px;
+  }
 
-.viewer.two-col{
-  column-count:2;
-  column-gap:var(--column-gap);
-  column-fill:auto;
-}
+  html,body{height:100%;margin:0;background:var(--page-bg);
+    font-family:Georgia,"Times New Roman",serif;color:#111}
+  .wrap{max-width:980px;margin:22px auto;padding:18px}
+  header h1{margin:0 0 4px 0;font-size:28px;font-weight:800}
+  header p{margin:0 0 14px 0;color:var(--muted);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 
-.header-box{
-  border:1px solid #dce2ea;
-  border-radius:12px;
-  padding:14px 16px;
-  margin-bottom:16px;
-  column-span:all;
-  text-align:center;
-}
+  .card{background:var(--card-bg);border-radius:12px;padding:16px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);margin-bottom:14px}
 
-.title{font-size:var(--title-size);font-weight:800}
-.subtitle{font-size:var(--subtitle-size);font-style:italic;color:var(--muted)}
+  .topbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+    border:1px solid #dce2ea;background:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#111}
+  .btn{padding:8px 14px;border-radius:10px;cursor:pointer;font-family:system-ui;
+    border:1px solid var(--accent);background:#fff;color:var(--accent);font-weight:700}
+  .btn.primary{background:var(--accent);color:#fff}
+  .small{font-size:13px;color:var(--muted);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 
-.header-badges{
-  display:flex;justify-content:center;flex-wrap:wrap;
-  gap:10px;margin-top:10px
-}
+  .viewer{background:#fff;border-radius:12px;padding:var(--viewer-pad);
+    box-shadow:0 2px 6px rgba(0,0,0,.06)}
+  .viewer.two-col{column-count:2;column-gap:var(--column-gap);column-fill:auto}
 
-.header-badge{
-  min-width:26px;height:26px;border-radius:50%;
-  border:2px solid var(--generic-ac);
-  display:flex;align-items:center;justify-content:center;
-  font-size:var(--badge-font);font-weight:800
-}
+  .header-box{border:1px solid #dce2ea;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .viewer > .header-box{-webkit-column-span:all;column-span:all;width:100%;box-sizing:border-box}
+  .header-content{text-align:center}
+  .title{font-size:var(--title-size);font-weight:800;margin:0 0 4px 0}
+  .subtitle{font-size:var(--subtitle-size);font-style:italic;color:var(--muted);
+    margin:0 0 6px 0}
+  .meta-row{font-size:var(--meta-size);color:var(--muted);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 
-.section-box{
-  border:1px solid #dce2ea;
-  border-radius:12px;
-  margin:12px 0;
-  break-inside:avoid;
-}
+  .header-badges{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;
+    gap:10px;margin-top:var(--header-gap)}
+  .header-badge{min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+    font-size:var(--badge-font);font-weight:800;border-radius:50%;border:2px solid var(--generic-ac);
+    background:#fff;color:#111;padding:0 6px}
+  .header-badge.type-verse{border-color:var(--verse-ac)}
+  .header-badge.type-prechorus{border-color:var(--prechorus-ac)}
+  .header-badge.type-chorus{border-color:var(--chorus-ac)}
+  .header-badge.type-bridge{border-color:var(--bridge-ac)}
+  .header-badge.type-intro{border-color:var(--intro-ac)}
+  .header-badge.type-interlude{border-color:var(--interlude-ac)}
+  .header-badge.type-outro{border-color:var(--outro-ac)}
+  .header-badge.type-medley{border-color:var(--medley-ac)}
+  .header-badge.type-instrumental{border-color:var(--instrumental-ac)}
+  .header-badge.type-solo{border-color:var(--solo-ac)}
+  .header-badge.type-generic{border-color:var(--generic-ac)}
 
-.section-head{
-  position:relative;padding:16px 16px 4px 16px;
-}
+  .song-block{margin-bottom:16px}
+  .song-divider{height:1px;background:#e7ebf2;margin:18px 0}
 
-.section-title{
-  font-family:system-ui;
-  font-weight:700;color:#1f6feb;
-  font-size:var(--section-title)
-}
+  .section-box{margin:12px 0!important;border-radius:12px;border:1px solid #dce2ea;background:var(--generic-bg)}
+  .section-box + .section-box{margin-top:14px!important}
+  .section-box:last-of-type{margin-bottom:8px!important}
 
-.section-badge{
-  position:absolute;top:-10px;left:16px;
-  width:26px;height:26px;border-radius:50%;
-  border:2px solid var(--generic-ac);
-  background:#fff;
-  font-size:var(--badge-font);font-weight:800;
-  display:flex;align-items:center;justify-content:center
-}
+  .section-box.verse {background:var(--verse-bg);}
+  .section-box.chorus {background:var(--chorus-bg);}
+  .section-box.bridge {background:var(--bridge-bg);}
+  .section-box.intro{background:var(--intro-bg)}
+  .section-box.interlude{background:var(--interlude-bg)}
+  .section-box.outro{background:var(--outro-bg)}
+  .section-box.medley{background:var(--medley-bg)}
+  .section-box.instrumental{background:var(--instrumental-bg)}
+  .section-box.solo{background:var(--solo-bg)}
+  .section-box.prechorus{background:var(--prechorus-bg);}
 
-.section-line{
-  position:absolute;top:0;left:52px;right:16px;
-  height:2px;background:var(--generic-ac)
-}
+  .section-head{position:relative;padding:18px 16px 4px 16px;overflow:visible}
+  .section-title{margin:8px 0 0 0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    font-weight:700;color:#1f6feb;font-size:var(--section-title)}
+  .section-badge{position:absolute;top:-10px;left:16px;min-width:26px;height:26px;border-radius:50%;
+    background:#fff;border:2px solid var(--generic-ac);font-size:var(--badge-font);font-weight:800;
+    display:flex;align-items:center;justify-content:center}
+  .section-line{position:absolute;top:0;left:52px;right:16px;height:2px;background:var(--generic-ac);border-radius:3px}
 
-.section-body{padding:0 16px 8px 16px}
+  .section-box.verse .section-line,.section-box.verse .section-badge{border-color:var(--verse-ac)}
+  .section-box.chorus .section-line,.section-box.chorus .section-badge{border-color:var(--chorus-ac)}
+  .section-box.bridge .section-line,.section-box.bridge .section-badge{border-color:var(--bridge-ac)}
+  .section-box.intro .section-line,.section-box.intro .section-badge{border-color:var(--intro-ac)}
+  .section-box.interlude .section-line,.section-box.interlude .section-badge{border-color:var(--interlude-ac)}
+  .section-box.outro .section-line,.section-box.outro .section-badge{border-color:var(--outro-ac)}
+  .section-box.medley .section-line,.section-box.medley .section-badge{border-color:var(--medley-ac)}
+  .section-box.instrumental .section-line,.section-box.instrumental .section-badge{border-color:var(--instrumental-ac)}
+  .section-box.solo .section-line,.section-box.solo .section-badge{border-color:var(--solo-ac)}
+  .section-box.prechorus .section-line,.section-box.prechorus .section-badge{border-color:var(--prechorus-ac)}
 
-pre{
-  font-family:"Courier New",monospace;
-  font-size:var(--lyric-size);
-  line-height:1.25;margin:2px 0
-}
+  .section-body{padding:0 16px 8px 16px!important}
 
-.chord-strong{font-weight:700;font-size:var(--chord-size)}
+  pre{font-family:"Courier New",Courier,monospace;white-space:pre;font-size:var(--lyric-size);
+    line-height:1.25!important;margin:2px 0!important;padding:2px 0!important;background:transparent!important;border:none!important}
+  .chord-strong{font-weight:700;font-size:var(--chord-size)}
+
+  .comment{color:var(--muted);font-style:italic;margin:6px 0;padding-left:6px;border-left:2px solid #f0f0f0}
+  .comment.box{border-left:4px solid #ccc;background:#f8f8f8;padding:8px;border-radius:6px;font-style:normal;color:#333}
+
+  @media (max-width: 820px){
+    .viewer{column-count:1!important;padding:12px!important}
+  }
+
+  @media print{
+    body{margin:12mm;background:#fff}
+    .no-print{display:none!important}
+    .viewer{box-shadow:none;padding:0}
+    @page{size:Letter;margin:12mm}
+    pre{line-height:1.25!important}
+    .viewer.two-col{column-gap:8mm!important}
+  }
 </style>
 </head>
 
 <body>
+  <div class="wrap">
+    <header class="no-print">
+      <h1>Service View</h1>
+      <p>View-only service set (renders with the same formatting as your Chart Editor).</p>
+    </header>
 
-<div id="serviceOutput" class="viewer two-col"></div>
+    <div class="card no-print">
+      <div class="topbar">
+        <span class="pill"><strong>Status:</strong> <span id="statusText">Loading…</span></span>
+        <button class="btn primary" id="printBtn">Print / Export PDF</button>
+        <button class="btn" id="copyLinkBtn">Copy Link</button>
+        <span class="small" id="hintText"></span>
+      </div>
+      <div class="small" style="margin-top:10px">
+        If this page ever shows the wrong songs, it means the <code>?set=</code> payload failed to decode.
+        This version tries multiple decode methods to prevent that.
+      </div>
+    </div>
 
-<!-- 🔑 Decompression support -->
+    <div id="serviceOutput" class="viewer card" aria-live="polite"></div>
+  </div>
+
+<!-- LZString -->
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
-
 <script>
-/* ==========================================================
-   EXACT RENDERER (copied, not modified)
-========================================================== */
+/* ================== Utilities (same behavior as editor) ================== */
+const MAJOR_KEYS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT_EQ={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
 
-const esc=s=>(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const esc=s=>(s??'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
+/* Transpose */
+function transposeChordToken(token,steps){
+  const [main,bass]=token.split('/');
+  const tr=ch=>{
+    const m=ch.match(/^([A-G])([#b])?(.*)$/); if(!m) return ch;
+    let[,r,a,rest]=m; let full=r+(a||''); if(FLAT_EQ[full]) full=FLAT_EQ[full];
+    let i=NOTES.indexOf(full); if(i===-1) return ch;
+    let ni=(i+steps)%12; if(ni<0) ni+=12;
+    return NOTES[ni]+(rest||'');
+  };
+  return bass? tr(main)+'/'+tr(bass) : tr(main);
+}
+function applyTransposeToText(text,steps){
+  return text.replace(/\[([^\]]+)\]/g,(_,ch)=>'['+ch.split(/\s+/).filter(Boolean).map(t=>transposeChordToken(t,steps)).join(' ')+']');
+}
+
+/* Two-row renderer */
 function renderLineTwoRow(l){
   let lyric='',segs=[],acc='',inch=false,len=0;
   for(let i=0;i<l.length;i++){
     const ch=l[i];
     if(ch==='['){inch=true;acc='';}
     else if(ch===']'){
-      inch=false;
-      const pad=lyric.length-len;
-      if(pad>0) segs.push({t:'s',l:pad});
-      segs.push({t:'c',x:acc});
-      len+=(pad>0?pad:0)+acc.length;
-    }else if(inch){acc+=ch;}
-    else{lyric+=ch;}
+      inch=false; const pad=lyric.length-len; if(pad>0) segs.push({t:'s',l:pad});
+      segs.push({t:'c',x:acc}); len+=(pad>0?pad:0)+acc.length;
+    }else if(inch){acc+=ch;} else {lyric+=ch;}
   }
-  let out='';
-  for(const s of segs){
-    out+=s.t==='s'?' '.repeat(s.l):`<span class="chord-strong">${esc(s.x)}</span>`;
-  }
+  let out=''; for(const s of segs){out += s.t==='s' ? ' '.repeat(s.l) : `<span class="chord-strong">${esc(s.x)}</span>`;}
   if(out.trim()) return `<pre>${out}\n${esc(lyric)}</pre>`;
   if(lyric.trim()) return `<pre>${esc(lyric)}</pre>`;
-  return '';
+  return '<div style="height:8px"></div>';
 }
 
-function renderSong(chordPro){
-  const lines=chordPro.split('\n');
-  let html='';
+/* Section type + badges */
+function classifySection(labelGuess, tokenType = null) {
+  const t = (labelGuess || '').trim().toLowerCase();
+  const numMatch = t.match(/(\d+)/);
+  const num = numMatch ? ` ${numMatch[1]}` : '';
 
-  for(const line of lines){
-    if(line.startsWith('{title:')){
-      html+=`<div class="header-box">
-        <div class="title">${esc(line.replace('{title:','').replace('}',''))}</div>
-      </div>`;
-      continue;
-    }
-    if(line.trim()==='') continue;
-    html+=renderLineTwoRow(line);
+  const map = {
+    verse: 'Verse', verso: 'Verso', estrofa: 'Verso',
+    prechorus: 'Pre-Chorus', precoro: 'Pre-Coro',
+    chorus: 'Chorus', coro: 'Coro',
+    bridge: 'Bridge', puente: 'Puente',
+    intro: 'Intro',
+    interlude: 'Interlude', interludio: 'Interludio',
+    outro: 'Outro', final: 'Final',
+    medley: 'Medley',
+    instrumental: 'Instrumental', instr: 'Instrumental',
+    solo: 'Solo'
+  };
+
+  if (tokenType && map[tokenType]) {
+    return { type: tokenType, title: map[tokenType] + num };
   }
+  for (const key in map) if (t.includes(key)) return { type: key, title: map[key] + num };
+  return { type: 'generic', title: (labelGuess || 'Section') + num };
+}
+function autoBadgeFrom(type, title) {
+  const m = (title || '').match(/(\d+)/);
+  const n = m ? m[1] : '';
+  switch (type) {
+    case 'verse': case 'verso': case 'estrofa': return 'V' + (n || '');
+    case 'prechorus': case 'precoro': return 'Pc' + (n || '');
+    case 'chorus': case 'coro': return 'C' + (n || '');
+    case 'bridge': case 'puente': return 'B' + (n || '');
+    case 'intro': return 'I' + (n || '');
+    case 'interlude': case 'interludio': return 'It' + (n || '');
+    case 'outro': case 'final': return 'O' + (n || '');
+    case 'medley': return 'M' + (n || '');
+    case 'instrumental': case 'instr': return 'Inst' + (n || '');
+    case 'solo': return 'S' + (n || '');
+    default: return '';
+  }
+}
+function mapSectionToken(tok) {
+  if (!tok) return { type: 'generic', text: '' };
+  const t = tok.trim().toUpperCase();
+  const numMatch = t.match(/(\d+)/);
+  const num = numMatch ? numMatch[1] : '';
+  const base = t.replace(/\d+/g, '').trim();
+
+  const map = {
+    I: 'intro', INTRO: 'intro',
+    V: 'verse', VERSE: 'verse', VERSO: 'verse', ESTROFA: 'verse',
+    PC: 'prechorus', PCH: 'prechorus', PRECHORUS: 'prechorus', PRECORO: 'prechorus',
+    C: 'chorus', CH: 'chorus', CHORUS: 'chorus', CORO: 'chorus',
+    B: 'bridge', BR: 'bridge', BRIDGE: 'bridge', PUENTE: 'bridge',
+    IT: 'interlude', INTERLUDE: 'interlude', INTERLUDIO: 'interlude',
+    O: 'outro', OUTRO: 'outro', FINAL: 'outro',
+    M: 'medley', MEDLEY: 'medley',
+    INST: 'instrumental', INSTRUMENTAL: 'instrumental', INSTR: 'instrumental',
+    S: 'solo', SOLO: 'solo'
+  };
+
+  let type = 'generic';
+  for (const key in map) if (base === key) { type = map[key]; break; }
+
+  let text = '';
+  switch (type) {
+    case 'verse': text = 'V' + (num || ''); break;
+    case 'prechorus': text = 'Pc' + (num || ''); break;
+    case 'chorus': text = 'C' + (num || ''); break;
+    case 'bridge': text = 'B' + (num || ''); break;
+    case 'intro': text = 'I' + (num || ''); break;
+    case 'interlude': text = 'It' + (num || ''); break;
+    case 'outro': text = 'O' + (num || ''); break;
+    case 'medley': text = 'M' + (num || ''); break;
+    case 'instrumental': text = 'Inst' + (num || ''); break;
+    case 'solo': text = 'S' + (num || ''); break;
+    default: text = base || '';
+  }
+  return { type, text };
+}
+function buildHeaderBadges(sectionListStr){
+  if(!sectionListStr) return '';
+  const tokens=sectionListStr.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!tokens.length) return '';
+  const spans=tokens.map(tok=>{
+    const {type,text}=mapSectionToken(tok);
+    return `<span class="header-badge type-${type}">${esc(text)}</span>`;
+  });
+  return `<div class="header-badges">${spans.join('')}</div>`;
+}
+
+/* Header parsing */
+function splitHeaderBlock(raw){
+  const start=raw.indexOf('{start_header}'), end=raw.indexOf('{end_header}');
+  if(start!==-1 && end!==-1 && end>start){
+    const before=raw.slice(0,start), header=raw.slice(start+15,end), after=raw.slice(end+13);
+    return{header,body:before+after,hasExplicit:true};
+  }
+  return{header:null,body:raw,hasExplicit:false};
+}
+function parseMetaFields(text){
+  const get=tag=>{ const m=text.match(new RegExp(`\\{${tag}:\\s*(.*?)\\}`,'i')); return m?m[1].trim():null; };
+  return{
+    title:get('title'),subtitle:get('subtitle'),artist:get('artist'),album:get('album'),
+    key:get('key'),time:get('time'),tempo:get('tempo'),capo:get('capo'),
+    comment:get('comment'),comment_box:get('comment_box'),section_list:get('section_list')
+  };
+}
+function normalizeKey(k){
+  if(!k) return null;
+  const m=k.trim().match(/^([A-G])([#b]?)(m?)$/i);
+  if(!m) return null;
+  let r=m[1].toUpperCase(), a=m[2]||'', min=m[3]?'m':'';
+  let full=r+a; if(FLAT_EQ[full]) full=FLAT_EQ[full];
+  return full+min;
+}
+function computeSemitoneDiff(a,b){
+  const nf=normalizeKey(a), nt=normalizeKey(b);
+  if(!nf||!nt) return 0;
+  const i1=NOTES.indexOf(nf.replace(/m$/,'')), i2=NOTES.indexOf(nt.replace(/m$/,''));
+  let d=i2-i1; if(d>6)d-=12; if(d<-6)d+=12;
+  return d;
+}
+
+function getKeyFromChordPro(raw){
+  const m=raw.match(/\{key:\s*([A-G][#b]?m?)\s*\}/i);
+  return m ? m[1].replace(/\s+/g,'') : null;
+}
+function getCapoFromChordPro(raw){
+  const m=raw.match(/\{capo:\s*(\d+)\s*\}/i);
+  const v = m ? parseInt(m[1],10) : 0;
+  return (isNaN(v) ? 0 : Math.max(0, Math.min(12, v)));
+}
+
+/* Service-mode header: show SERVICE key (not the original header key) */
+function renderHeaderService(headerText, metaFallback, serviceKey){
+  let html='<div class="header-box"><div class="header-content">';
+  let sectionListStr=null;
+  let metaLine=[];
+  let title=null, subtitle=null, artist=null, album=null, time=null, tempo=null;
+  let commentBoxVal=null;
+
+  const pushMeta=(label,val)=>{ if(val!=null && String(val).trim()!=='') metaLine.push(`${label}: ${esc(val)}`); };
+
+  // Parse explicit header lines first (if present)
+  const src = headerText ? headerText : '';
+  const lines = src ? src.replace(/\r/g,'').split('\n') : [];
+  const getTagLine = (tag)=>{
+    const m = src.match(new RegExp(`\\{${tag}:\\s*(.*?)\\}`, 'i'));
+    return m ? m[1].trim() : null;
+  };
+
+  title = getTagLine('title') || metaFallback?.title || '';
+  subtitle = getTagLine('subtitle') || metaFallback?.subtitle || '';
+  artist = getTagLine('artist') || metaFallback?.artist || '';
+  album = getTagLine('album') || metaFallback?.album || '';
+  time = getTagLine('time') || metaFallback?.time || '';
+  tempo = getTagLine('tempo') || metaFallback?.tempo || '';
+  commentBoxVal = getTagLine('comment_box') || metaFallback?.comment_box || null;
+  sectionListStr = getTagLine('section_list') || metaFallback?.section_list || null;
+
+  if(title) html += `<div class="title">${esc(title)}</div>`;
+  if(subtitle) html += `<div class="subtitle">${esc(subtitle)}</div>`;
+
+  if(artist || album){
+    let t='';
+    if(artist) t += `Artist: ${esc(artist)}`;
+    if(artist && album) t += ' • ';
+    if(album) t += `Album: ${esc(album)}`;
+    html += `<div class="meta-row">${t}</div>`;
+  }
+
+  // IMPORTANT: show Service Key here
+  pushMeta('Key', serviceKey || '');
+  if(time) pushMeta('Time', time);
+  if(tempo) pushMeta('Tempo', tempo);
+  html += metaLine.length ? `<div class="meta-row">${metaLine.join(' | ')}</div>` : '';
+
+  if(commentBoxVal){
+    // Force bracket to [ServiceKey] if present
+    let v = commentBoxVal;
+    if(serviceKey){
+      if (/\[[^\]]*\]/.test(v)) v = v.replace(/\[[^\]]*\]/, `[${serviceKey}]`);
+      else v = `${v} [${serviceKey}]`;
+    }
+    html += `<div style="display:inline-block;border:1px solid #d4d8e0;border-radius:8px;
+      padding:6px 10px;margin:6px 0;background:#fafafa">${esc(v)}</div>`;
+  }
+
+  html += '</div>';
+  const badges = buildHeaderBadges(sectionListStr);
+  if(badges) html += badges;
+  html += '</div>';
   return html;
 }
 
-/* ==========================================================
-   SERVICE SET LOADER
-========================================================== */
+/* Body parser with section boxes */
+function parseChordProBody(text){
+  const lines=text.replace(/\r/g,'').split('\n'), parts=[];
+  let sectionOpen=false, blockType=null;
+  let nextNoBadge=false,nextNoLine=false,nextBadge=null,nextPlain=false;
 
-(function(){
-  const params=new URLSearchParams(location.search);
-  const set=params.get('set');
-  if(!set){
-    document.getElementById('serviceOutput').innerHTML=
-      '<p style="color:#888;text-align:center">No service set loaded</p>';
+  const openSection=(labelGuess,tokenType=null)=>{
+    const cls=classifySection(labelGuess,tokenType), type=cls.type, title=cls.title;
+    const hideBadge=nextPlain||nextNoBadge, hideLine=nextPlain||nextNoLine;
+    const badgeText=nextPlain?'':(nextBadge!=null?nextBadge:autoBadgeFrom(type,title));
+    parts.push(`<div class="section-box ${type}">`);
+    parts.push(`<div class="section-head">`);
+    if(!hideLine) parts.push('<div class="section-line"></div>');
+    if(badgeText) parts.push(`<div class="section-badge">${esc(badgeText)}</div>`);
+    parts.push(`<div class="section-title">${esc(title)}</div>`);
+    parts.push(`</div><div class="section-body">`);
+    nextNoBadge=false; nextNoLine=false; nextBadge=null; nextPlain=false; sectionOpen=true;
+  };
+  const closeSection=()=>{ if(sectionOpen){ parts.push('</div></div>'); sectionOpen=false; } };
+
+  for(const raw of lines){
+    const line=raw.trimEnd();
+
+    const ov=line.match(/^\{badge:\s*(.*?)\}$/i); if(ov){nextBadge=ov[1];continue;}
+    if(/^\{no_badge\}$/i.test(line)){nextNoBadge=true;continue;}
+    if(/^\{no_line\}$/i.test(line)){nextNoLine=true;continue;}
+    if(/^\{plain_section\}$/i.test(line)){nextPlain=true;continue;}
+
+    const kv=line.match(/^\{([^:}]+):\s*(.*?)\}$/);
+    if(kv){
+      const tag=kv[1].toLowerCase(), val=kv[2];
+      if(tag==='comment'){ closeSection(); openSection(val,null); }
+      else if(tag==='comment_italic'){ if(!sectionOpen) openSection('Section',null); parts.push(`<div class="comment" style="font-style:italic">${esc(val)}</div>`); }
+      else if(tag==='comment_box'){ if(!sectionOpen) openSection('Section',null); parts.push(`<div class="comment box">${esc(val)}</div>`); }
+      continue;
+    }
+
+    const match = line.match(/^\{([a-zA-Z0-9_\-]+)(?:\s+(\d+))?\}$/);
+    if (match) {
+      const t = match[1].toLowerCase();
+      const num = match[2] ? ` ${match[2]}` : '';
+
+      if (['start_of_chorus','soc','start_chorus','start_of_coro'].includes(t)) { closeSection(); blockType='chorus'; openSection('Chorus'+num,'chorus'); continue; }
+      if (['start_of_bridge','start_bridge','start_of_puente'].includes(t)) { closeSection(); blockType='bridge'; openSection('Bridge'+num,'bridge'); continue; }
+      if (['start_of_verse','verse','verso','estrofa'].includes(t)) { closeSection(); blockType='verse'; openSection('Verse'+num,'verse'); continue; }
+      if (['start_of_intro','intro'].includes(t)) { closeSection(); blockType='intro'; openSection('Intro'+num,'intro'); continue; }
+      if (['start_of_interlude','interlude','interludio'].includes(t)) { closeSection(); blockType='interlude'; openSection('Interlude'+num,'interlude'); continue; }
+      if (['start_of_outro','outro','final'].includes(t)) { closeSection(); blockType='outro'; openSection('Outro'+num,'outro'); continue; }
+      if (['start_of_prechorus','prechorus','pre_chorus','precoro'].includes(t)) { closeSection(); blockType='prechorus'; openSection('Pre-Chorus'+num,'prechorus'); continue; }
+      if (['start_of_medley','medley'].includes(t)) { closeSection(); blockType='medley'; openSection('Medley'+num,'medley'); continue; }
+      if (['start_of_instrumental','instrumental','instr'].includes(t)) { closeSection(); blockType='instrumental'; openSection('Instrumental'+num,'instrumental'); continue; }
+      if (['start_of_solo','solo'].includes(t)) { closeSection(); blockType='solo'; openSection('Solo'+num,'solo'); continue; }
+      if (['start_of_tab','start_tab'].includes(t)) { if(!sectionOpen) openSection('Tab'+num,'generic'); blockType='tab'; continue; }
+
+      if ([
+        'end_of_chorus','eoc','end_chorus',
+        'end_of_bridge','end_bridge',
+        'end_of_tab','end_tab',
+        'end_of_medley',
+        'end_of_instrumental',
+        'end_of_solo',
+        'end_of_verse',
+        'end_of_outro',
+        'end_of_prechorus'
+      ].includes(t)) { blockType=null; closeSection(); continue; }
+
+      continue;
+    }
+
+    if(line.trim()===''){ continue; }
+    if(!sectionOpen) openSection('Section',null);
+    if(blockType==='tab') parts.push(`<pre>${esc(line)}</pre>`);
+    else parts.push(renderLineTwoRow(line));
+  }
+
+  closeSection();
+  return parts.join('');
+}
+
+/* ================== Robust SET decoding ================== */
+function tryDecodeSetPayload(setParamRaw){
+  if(!setParamRaw) return { ok:false, error:'Missing ?set=' };
+
+  // Normalize + decodeURIComponent safely
+  let raw = setParamRaw.replace(/ /g,'+');
+
+  // Some builders store encodedURIComponent(compressToBase64) and others use compressToEncodedURIComponent
+  const candidates = [];
+  try { candidates.push(decodeURIComponent(raw)); } catch { candidates.push(raw); }
+  candidates.push(raw);
+
+  for(const c of candidates){
+    // 1) LZString encodedURIComponent
+    try {
+      const s1 = LZString.decompressFromEncodedURIComponent(c);
+      if (s1 && s1.trim()) return { ok:true, text:s1, method:'decompressFromEncodedURIComponent' };
+    } catch {}
+    // 2) LZString base64
+    try {
+      const s2 = LZString.decompressFromBase64(c);
+      if (s2 && s2.trim()) return { ok:true, text:s2, method:'decompressFromBase64' };
+    } catch {}
+    // 3) raw JSON (no compression)
+    if (c && c.trim().startsWith('{') || c.trim().startsWith('[')) {
+      return { ok:true, text:c, method:'rawJSON' };
+    }
+  }
+  return { ok:false, error:'Could not decompress set payload (tried EncodedURIComponent + Base64 + raw JSON).' };
+}
+
+function normalizeSetObject(obj){
+  // Accept: array, {songs:[...]}, {items:[...]}, {set:[...]}, {data:[...]}
+  let list = null;
+
+  if (Array.isArray(obj)) list = obj;
+  else if (obj && Array.isArray(obj.songs)) list = obj.songs;
+  else if (obj && Array.isArray(obj.items)) list = obj.items;
+  else if (obj && Array.isArray(obj.set)) list = obj.set;
+  else if (obj && Array.isArray(obj.data)) list = obj.data;
+
+  if(!list) return { ok:false, error:'Decoded payload is not a recognized set format (expected array or {songs:[...]} etc.)' };
+
+  // Normalize each song record
+  const songs = list.map((it, idx) => {
+    const rec = (it && typeof it === 'object') ? it : { text: String(it || '') };
+
+    const text = rec.text || rec.cho || rec.src || rec.content || rec.song || '';
+    const name = rec.name || rec.filename || rec.file || rec.title || `Song ${idx+1}`;
+    const serviceKey = rec.serviceKey || rec.service_key || rec.key || rec.transposeTo || rec.toKey || '';
+
+    return { name, text, serviceKey };
+  });
+
+  return { ok:true, songs };
+}
+
+/* ================== Render Service ================== */
+function renderService(){
+  const out = document.getElementById('serviceOutput');
+  const status = document.getElementById('statusText');
+  const hint = document.getElementById('hintText');
+
+  const params = new URLSearchParams(location.search);
+  const setParam = params.get('set');
+
+  if(!setParam){
+    status.textContent = 'No set provided';
+    out.innerHTML = `<div class="small">Missing <code>?set=</code>. Please open the Service View link generated by your Service Set Builder.</div>`;
     return;
   }
 
-  let decoded=LZString.decompressFromBase64(decodeURIComponent(set))||'';
-  const songs=decoded.split('\n---\n'); // song separator
+  const decoded = tryDecodeSetPayload(setParam);
+  if(!decoded.ok){
+    status.textContent = 'Decode failed (showing error)';
+    out.innerHTML = `
+      <div class="card" style="background:#fff1f2;border:1px solid #fecdd3">
+        <div style="font-family:system-ui;font-weight:800;color:#b91c1c">Service set could not be decoded</div>
+        <div class="small" style="margin-top:6px;color:#7f1d1d">${esc(decoded.error)}</div>
+        <div class="small" style="margin-top:10px">
+          This is the exact symptom that causes “random/default songs” to appear.
+          Your builder link is fine — the view page must decode it successfully.
+        </div>
+      </div>
+    `;
+    return;
+  }
 
-  let out='';
-  songs.forEach(song=>{
-    out+=renderSong(song);
+  let parsed;
+  try {
+    parsed = JSON.parse(decoded.text);
+  } catch (e){
+    status.textContent = 'JSON parse failed';
+    out.innerHTML = `
+      <div class="card" style="background:#fff7ed;border:1px solid #fed7aa">
+        <div style="font-family:system-ui;font-weight:800;color:#9a3412">Decoded payload is not valid JSON</div>
+        <div class="small" style="margin-top:6px;color:#7c2d12">Method: ${esc(decoded.method || '')}</div>
+        <pre style="white-space:pre-wrap;word-break:break-word;font-size:12px">${esc(decoded.text.slice(0,2000))}</pre>
+      </div>
+    `;
+    return;
+  }
+
+  const norm = normalizeSetObject(parsed);
+  if(!norm.ok){
+    status.textContent = 'Set format not recognized';
+    out.innerHTML = `<div class="card" style="background:#fff7ed;border:1px solid #fed7aa">
+      <div style="font-family:system-ui;font-weight:800;color:#9a3412">Set payload format not recognized</div>
+      <div class="small" style="margin-top:6px;color:#7c2d12">${esc(norm.error)}</div>
+    </div>`;
+    return;
+  }
+
+  const songs = norm.songs.filter(s => (s.text || '').trim().length > 0);
+  status.textContent = `Loaded ${songs.length} song(s)`;
+  hint.textContent = `Decode method: ${decoded.method || 'unknown'}`;
+
+  if(!songs.length){
+    out.innerHTML = `<div class="small">Set decoded, but no song text was found.</div>`;
+    return;
+  }
+
+  const blocks = [];
+  songs.forEach((song, i) => {
+    const raw = song.text || '';
+    const originalKey = getKeyFromChordPro(raw) || '';
+    const capoVal = getCapoFromChordPro(raw);
+
+    // serviceKey may be blank -> fall back to original
+    const serviceKey = (song.serviceKey && String(song.serviceKey).trim()) ? String(song.serviceKey).trim() : originalKey;
+
+    // effective = transposeToService - capo
+    const transposeSteps = (originalKey && serviceKey) ? computeSemitoneDiff(originalKey, serviceKey) : 0;
+    const effectiveSteps = transposeSteps - capoVal;
+
+    const {header, body, hasExplicit} = splitHeaderBlock(raw);
+    const metaFallback = parseMetaFields(raw);
+
+    const headerHtml = renderHeaderService(header, hasExplicit ? null : metaFallback, serviceKey);
+
+    let capoNote = '';
+    if (capoVal > 0){
+      capoNote = `<div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
+        Guitarist: Capo on fret ${capoVal}
+      </div>`;
+    }
+
+    const bodyT = applyTransposeToText(body, effectiveSteps);
+    const bodyHtml = parseChordProBody(bodyT);
+
+    const songHtml = `
+      <div class="song-block">
+        ${headerHtml}
+        ${capoNote}
+        ${bodyHtml}
+      </div>
+    `;
+
+    blocks.push(songHtml);
+    if (i !== songs.length - 1) blocks.push(`<div class="song-divider"></div>`);
   });
 
-  document.getElementById('serviceOutput').innerHTML=out;
-})();
-</script>
+  out.innerHTML = blocks.join('');
 
+  // Safari reflow fix similar idea (prevents header weirdness)
+  requestAnimationFrame(()=>{
+    if (/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)) {
+      out.style.display='none';
+      void out.offsetHeight;
+      out.style.display='';
+    }
+  });
+}
+
+/* ================== Buttons ================== */
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  // Print what is already rendered (includes section styling)
+  window.print();
+});
+document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
+  const url = location.href;
+  const inIframe = (window.self !== window.top);
+  if (navigator.clipboard && !inIframe) {
+    navigator.clipboard.writeText(url).then(()=>alert('✅ Link copied!')).catch(()=>prompt('Copy link:', url));
+  } else {
+    prompt('Copy link:', url);
+  }
+});
+
+/* Init */
+renderService();
+</script>
 </body>
 </html>

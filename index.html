@@ -559,7 +559,7 @@ function normalizeSetObject(obj){
 
   return { ok:true, songs };
 }
-
+let serviceCapo = 0;
 /* ================== Render Service ================== */
 function renderService(){
   const out = document.getElementById('serviceOutput');
@@ -629,7 +629,7 @@ function renderService(){
   songs.forEach((song, i) => {
     const raw = song.text || '';
     const originalKey = getKeyFromChordPro(raw) || '';
-    const capoVal = getCapoFromChordPro(raw);
+    const capoVal = getCapoFromChordPro(raw) + serviceCapo;
 
     // serviceKey may be blank -> fall back to original
     const serviceKey = (song.serviceKey && String(song.serviceKey).trim()) ? String(song.serviceKey).trim() : originalKey;
@@ -682,15 +682,14 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
   // Print what is already rendered (includes section styling)
   window.print();
 });
-document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
-  const url = location.href;
-  const inIframe = (window.self !== window.top);
-  if (navigator.clipboard && !inIframe) {
-    navigator.clipboard.writeText(url).then(()=>alert('✅ Link copied!')).catch(()=>prompt('Copy link:', url));
-  } else {
-    prompt('Copy link:', url);
-  }
-});
+
+const capoSelect = document.getElementById('capoSelect');
+if (capoSelect) {
+  capoSelect.addEventListener('change', () => {
+    serviceCapo = parseInt(capoSelect.value, 10) || 0;
+    renderService();
+  });
+}
 
 /* Init */
 renderService();

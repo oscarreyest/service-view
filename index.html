@@ -422,6 +422,15 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
     html += `<div style="display:inline-block;border:1px solid #d4d8e0;border-radius:8px;
       padding:6px 10px;margin:6px 0;background:#fafafa">${esc(v)}</div>`;
   }
+// 🎸 Per-song capo selector (view-only)
+html += `
+  <div class="meta-row no-print" style="margin-top:6px">
+    Capo:
+    <select class="song-capo" data-song-index="">
+      ${Array.from({length:13},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
+    </select>
+  </div>
+`;
 
   html += '</div>';
   const badges = buildHeaderBadges(sectionListStr);

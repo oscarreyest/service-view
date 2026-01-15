@@ -661,7 +661,7 @@ const capoVal = getCapoFromChordPro(raw) + perSongCapo;
     // Inject song index for per-song controls
 metaFallback.__songIndex = i;
 
-    const headerHtml = renderHeaderService(header, hasExplicit ? null : metaFallback, serviceKey);
+    const headerHtml = renderHeaderService(header, metaFallback, serviceKey);
 
     let capoNote = '';
     if (capoVal > 0){

@@ -160,26 +160,6 @@
     <div class="card no-print">
   <div class="topbar" style="justify-content:center; gap:12px">
 
-    <!-- Capo selector (NEW) -->
-    <label class="pill">
-  Guitar Capo:
-  <select id="capoSelect">
-    <option value="0">0</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-    <option value="9">9</option>
-    <option value="10">10</option>
-    <option value="11">11</option>
-    <option value="12">12</option>
-  </select>
-</label>
-
 <!-- Wind Instruments selector (NEW) -->
 <label class="pill">
   Wind Instruments:
@@ -438,8 +418,8 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
 // 🎸 Per-song capo selector (view-only)
 html += `
   <div class="meta-row no-print" style="margin-top:6px">
-    Capo:
-    <select class="song-capo" data-song-index="">
+    Guitar Capo:
+  <select class="song-capo" data-song-index="">
       ${Array.from({length:13},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
     </select>
   </div>
@@ -590,6 +570,7 @@ function normalizeSetObject(obj){
 let serviceCapo = 0;
 let instrumentTranspose = 0; // 0 = concert, +2 = Bb trumpet
 
+const songCapos = {};
 /* ================== Render Service ================== */
 function renderService(){
   const out = document.getElementById('serviceOutput');

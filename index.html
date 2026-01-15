@@ -418,6 +418,8 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
  // 🎸 Per-song capo selector (view-only)
 const songIndex = metaFallback?.__songIndex;
 
+  console.log('[ServiceView] songIndex:', metaFallback?.__songIndex);
+  
 if (songIndex != null) {
   const currentCapo = songCapos[songIndex] ?? 0;
 

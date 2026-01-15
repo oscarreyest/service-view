@@ -416,7 +416,7 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
   }
 
   // IMPORTANT: show Service Key here
-  pushMeta('Key', serviceKey || '');
+  pushMeta('Key', metaFallback?.key || '');
   if(time) pushMeta('Time', time);
   if(tempo) pushMeta('Tempo', tempo);
   html += metaLine.length ? `<div class="meta-row">${metaLine.join(' | ')}</div>` : '';

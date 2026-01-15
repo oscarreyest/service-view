@@ -419,7 +419,7 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
 html += `
   <div class="meta-row no-print" style="margin-top:6px">
     Guitar Capo:
-  <select class="song-capo" data-song-index="">
+  <select class="song-capo" data-song-index="${metaFallback?.__songIndex ?? ''}">
       ${Array.from({length:13},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
     </select>
   </div>
@@ -569,8 +569,9 @@ function normalizeSetObject(obj){
 }
 let serviceCapo = 0;
 let instrumentTranspose = 0; // 0 = concert, +2 = Bb trumpet
-
+// Per-song guitar capo (indexed by song order)
 const songCapos = {};
+
 /* ================== Render Service ================== */
 function renderService(){
   const out = document.getElementById('serviceOutput');
@@ -640,7 +641,9 @@ function renderService(){
   songs.forEach((song, i) => {
     const raw = song.text || '';
     const originalKey = getKeyFromChordPro(raw) || '';
-    const capoVal = getCapoFromChordPro(raw) + serviceCapo;
+    const perSongCapo = songCapos[i] ?? 0;
+const capoVal = getCapoFromChordPro(raw) + perSongCapo;
+
 
     // serviceKey may be blank -> fall back to original
     const serviceKey = (song.serviceKey && String(song.serviceKey).trim()) ? String(song.serviceKey).trim() : originalKey;
@@ -651,6 +654,8 @@ function renderService(){
 
     const {header, body, hasExplicit} = splitHeaderBlock(raw);
     const metaFallback = parseMetaFields(raw);
+    // Inject song index for per-song controls
+metaFallback.__songIndex = i;
 
     const headerHtml = renderHeaderService(header, hasExplicit ? null : metaFallback, serviceKey);
 
@@ -701,6 +706,17 @@ if (capoSelect) {
     renderService();
   });
 }
+// Per-song Guitar Capo handling
+document.addEventListener('change', (e) => {
+  if (!e.target.classList.contains('song-capo')) return;
+
+  const idx = parseInt(e.target.dataset.songIndex, 10);
+  if (isNaN(idx)) return;
+
+  songCapos[idx] = parseInt(e.target.value, 10) || 0;
+  renderService();
+});
+
 const instrumentSelect = document.getElementById('instrumentSelect');
 if (instrumentSelect) {
   instrumentSelect.addEventListener('change', () => {

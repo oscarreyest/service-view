@@ -415,21 +415,20 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
     html += `<div style="display:inline-block;border:1px solid #d4d8e0;border-radius:8px;
       padding:6px 10px;margin:6px 0;background:#fafafa">${esc(v)}</div>`;
   }
-// 🎸 Per-song capo selector (view-only)
-html += `
-  const songIndex = metaFallback?.__songIndex;
-const currentCapo = songCapos[songIndex] ?? 0;
+  // 🎸 Per-song capo selector (view-only)
+  const songIndex = metaFallback?.__songIndex ?? '';
+  const currentCapo = (songIndex !== '' ? (songCapos[songIndex] ?? 0) : 0);
 
-html += `
-  <div class="meta-row no-print" style="margin-top:6px">
-    Guitar Capo:
-    <select class="song-capo" data-song-index="${songIndex}">
-      ${Array.from({ length: 13 }, (_, i) =>
-        `<option value="${i}" ${i === currentCapo ? 'selected' : ''}>${i}</option>`
-      ).join('')}
-    </select>
-  </div>
-`;
+  html += `
+    <div class="meta-row no-print" style="margin-top:6px">
+      Guitar Capo:
+      <select class="song-capo" data-song-index="${songIndex}">
+        ${Array.from({ length: 13 }, (_, i) =>
+          `<option value="${i}" ${i === currentCapo ? 'selected' : ''}>${i}</option>`
+        ).join('')}
+      </select>
+    </div>
+  `;
 
   html += '</div>';
   const badges = buildHeaderBadges(sectionListStr);
@@ -541,7 +540,7 @@ function tryDecodeSetPayload(setParamRaw){
       if (s2 && s2.trim()) return { ok:true, text:s2, method:'decompressFromBase64' };
     } catch {}
     // 3) raw JSON (no compression)
-    if (c && c.trim().startsWith('{') || c.trim().startsWith('[')) {
+    if (c && (c.trim().startsWith('{') || c.trim().startsWith('['))) {
       return { ok:true, text:c, method:'rawJSON' };
     }
   }

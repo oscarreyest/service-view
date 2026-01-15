@@ -170,7 +170,7 @@
 </label>
     
     <label class="pill">
-  <input type="checkbox" id="nashvilleToggle" />
+  <input type="checkbox" id="nashvilleToggle">
   Nashville Number System
 </label>
 
@@ -208,6 +208,40 @@ function transposeChordToken(token,steps){
 }
 function applyTransposeToText(text,steps){
   return text.replace(/\[([^\]]+)\]/g,(_,ch)=>'['+ch.split(/\s+/).filter(Boolean).map(t=>transposeChordToken(t,steps)).join(' ')+']');
+}
+const NASHVILLE_NUMBERS = ['1','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7'];
+
+function chordToNashville(chord, key) {
+  const m = chord.match(/^([A-G])([#b]?)(.*)$/);
+  if (!m || !key) return chord;
+
+  let [, root, accidental, rest] = m;
+  let full = root + (accidental || '');
+  if (FLAT_EQ[full]) full = FLAT_EQ[full];
+
+  const keyNorm = normalizeKey(key);
+  if (!keyNorm) return chord;
+
+  const keyRoot = keyNorm.replace(/m$/, '');
+  const rootIndex = NOTES.indexOf(full);
+  const keyIndex = NOTES.indexOf(keyRoot);
+
+  if (rootIndex === -1 || keyIndex === -1) return chord;
+
+  let interval = rootIndex - keyIndex;
+  if (interval < 0) interval += 12;
+
+  return (NASHVILLE_NUMBERS[interval] || '?') + rest;
+}
+
+function applyNashville(text, key) {
+  return text.replace(/\[([^\]]+)\]/g, (_, chordLine) => {
+    const converted = chordLine
+      .split(/\s+/)
+      .map(c => chordToNashville(c, key))
+      .join(' ');
+    return `[${converted}]`;
+  });
 }
 
 /* Two-row renderer */
@@ -581,6 +615,7 @@ function normalizeSetObject(obj){
   return { ok:true, songs };
 }
 let instrumentTranspose = 0; // 0 = concert, +2 = Bb trumpet
+let useNashville = false;
 // Per-song guitar capo (indexed by song order)
 const songCapos = {};
 
@@ -678,7 +713,12 @@ metaFallback.__songIndex = i;
       </div>`;
     }
 
-    const bodyT = applyTransposeToText(body, effectiveSteps);
+    let bodyT = applyTransposeToText(body, effectiveSteps);
+
+if (useNashville) {
+  bodyT = applyNashville(bodyT, serviceKey || originalKey);
+}
+
     const bodyHtml = parseChordProBody(bodyT);
 
     const songHtml = `
@@ -727,6 +767,13 @@ if (instrumentSelect) {
   instrumentSelect.addEventListener('change', () => {
     instrumentTranspose =
       instrumentSelect.value === 'bb' ? 2 : 0;
+    renderService();
+  });
+}
+const nashvilleToggle = document.getElementById('nashvilleToggle');
+if (nashvilleToggle) {
+  nashvilleToggle.addEventListener('change', () => {
+    useNashville = nashvilleToggle.checked;
     renderService();
   });
 }

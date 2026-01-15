@@ -584,6 +584,8 @@ function normalizeSetObject(obj){
   return { ok:true, songs };
 }
 let serviceCapo = 0;
+let instrumentTranspose = 0; // 0 = concert, +2 = Bb trumpet
+
 /* ================== Render Service ================== */
 function renderService(){
   const out = document.getElementById('serviceOutput');
@@ -660,7 +662,7 @@ function renderService(){
 
     // effective = transposeToService - capo
     const transposeSteps = (originalKey && serviceKey) ? computeSemitoneDiff(originalKey, serviceKey) : 0;
-    const effectiveSteps = transposeSteps - capoVal;
+    const effectiveSteps = transposeSteps - capoVal + instrumentTranspose;
 
     const {header, body, hasExplicit} = splitHeaderBlock(raw);
     const metaFallback = parseMetaFields(raw);
@@ -711,6 +713,14 @@ const capoSelect = document.getElementById('capoSelect');
 if (capoSelect) {
   capoSelect.addEventListener('change', () => {
     serviceCapo = parseInt(capoSelect.value, 10) || 0;
+    renderService();
+  });
+}
+const instrumentSelect = document.getElementById('instrumentSelect');
+if (instrumentSelect) {
+  instrumentSelect.addEventListener('change', () => {
+    instrumentTranspose =
+      instrumentSelect.value === 'bb' ? 2 : 0;
     renderService();
   });
 }

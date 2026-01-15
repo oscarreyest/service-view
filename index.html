@@ -415,9 +415,11 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
     html += `<div style="display:inline-block;border:1px solid #d4d8e0;border-radius:8px;
       padding:6px 10px;margin:6px 0;background:#fafafa">${esc(v)}</div>`;
   }
-  // 🎸 Per-song capo selector (view-only)
-  const songIndex = metaFallback?.__songIndex ?? '';
-  const currentCapo = (songIndex !== '' ? (songCapos[songIndex] ?? 0) : 0);
+ // 🎸 Per-song capo selector (view-only)
+const songIndex = metaFallback?.__songIndex;
+
+if (songIndex != null) {
+  const currentCapo = songCapos[songIndex] ?? 0;
 
   html += `
     <div class="meta-row no-print" style="margin-top:6px">
@@ -429,6 +431,7 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
       </select>
     </div>
   `;
+}
 
   html += '</div>';
   const badges = buildHeaderBadges(sectionListStr);

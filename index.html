@@ -417,10 +417,16 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
   }
 // 🎸 Per-song capo selector (view-only)
 html += `
+  const songIndex = metaFallback?.__songIndex;
+const currentCapo = songCapos[songIndex] ?? 0;
+
+html += `
   <div class="meta-row no-print" style="margin-top:6px">
     Guitar Capo:
-  <select class="song-capo" data-song-index="${metaFallback?.__songIndex ?? ''}">
-      ${Array.from({length:13},(_,i)=>`<option value="${i}">${i}</option>`).join('')}
+    <select class="song-capo" data-song-index="${songIndex}">
+      ${Array.from({ length: 13 }, (_, i) =>
+        `<option value="${i}" ${i === currentCapo ? 'selected' : ''}>${i}</option>`
+      ).join('')}
     </select>
   </div>
 `;
@@ -567,7 +573,6 @@ function normalizeSetObject(obj){
 
   return { ok:true, songs };
 }
-let serviceCapo = 0;
 let instrumentTranspose = 0; // 0 = concert, +2 = Bb trumpet
 // Per-song guitar capo (indexed by song order)
 const songCapos = {};
@@ -699,13 +704,6 @@ document.getElementById('printBtn').addEventListener('click', ()=>{
   window.print();
 });
 
-const capoSelect = document.getElementById('capoSelect');
-if (capoSelect) {
-  capoSelect.addEventListener('change', () => {
-    serviceCapo = parseInt(capoSelect.value, 10) || 0;
-    renderService();
-  });
-}
 // Per-song Guitar Capo handling
 document.addEventListener('change', (e) => {
   if (!e.target.classList.contains('song-capo')) return;

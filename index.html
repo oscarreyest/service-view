@@ -212,8 +212,18 @@ function applyTransposeToText(text,steps){
 const NASHVILLE_NUMBERS = ['1','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7'];
 
 function chordToNashville(chord, key) {
+  if (!key) return chord;
+
+  // Handle slash chords: G/B, D/F#, etc.
+  if (chord.includes('/')) {
+    const [main, bass] = chord.split('/');
+    const mainN = chordToNashville(main, key);
+    const bassN = chordToNashville(bass, key);
+    return `${mainN}/${bassN}`;
+  }
+
   const m = chord.match(/^([A-G])([#b]?)(.*)$/);
-  if (!m || !key) return chord;
+  if (!m) return chord;
 
   let [, root, accidental, rest] = m;
   let full = root + (accidental || '');
@@ -233,6 +243,7 @@ function chordToNashville(chord, key) {
 
   return (NASHVILLE_NUMBERS[interval] || '?') + rest;
 }
+
 
 function applyNashville(text, key) {
   return text.replace(/\[([^\]]+)\]/g, (_, chordLine) => {

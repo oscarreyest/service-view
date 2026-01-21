@@ -151,6 +151,10 @@
     pre{line-height:1.25!important}
     .viewer.two-col{column-gap:8mm!important}
   }
+  .scale-note {
+  display: inline-block;
+  margin-right: 10px; /* adjust if needed */
+}
 </style>
 </head>
 
@@ -733,8 +737,8 @@ if (instrumentTranspose === 2 && (serviceKey || originalKey)) {
 
   const scaleIntervals = [0, 2, 4, 5, 7, 9, 11];
   const scaleNotes = scaleIntervals
-    .map(i => NOTES[(trumpetKeyIndex + i) % 12])
-    .join(' ');
+  .map(i => `<span class="scale-note">${NOTES[(trumpetKeyIndex + i) % 12]}</span>`)
+  .join('');
 
   trumpetNote = `
     <div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">

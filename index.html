@@ -723,6 +723,25 @@ metaFallback.__songIndex = i;
         Guitarist: Capo on fret ${capoVal}
       </div>`;
     }
+    
+let trumpetNote = '';
+if (instrumentTranspose === 2 && (serviceKey || originalKey)) {
+  const concertKey = serviceKey || originalKey;
+  const trumpetKeyIndex =
+    (NOTES.indexOf(normalizeKey(concertKey).replace(/m$/, '')) + 2) % 12;
+  const trumpetKey = NOTES[trumpetKeyIndex];
+
+  const scaleIntervals = [0, 2, 4, 5, 7, 9, 11];
+  const scaleNotes = scaleIntervals
+    .map(i => NOTES[(trumpetKeyIndex + i) % 12])
+    .join(' ');
+
+  trumpetNote = `
+    <div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
+      🎺 Trumpet scale (${trumpetKey}): ${scaleNotes}
+    </div>
+  `;
+}
 
     let bodyT = applyTransposeToText(body, effectiveSteps);
 
@@ -733,12 +752,13 @@ if (useNashville) {
     const bodyHtml = parseChordProBody(bodyT);
 
     const songHtml = `
-      <div class="song-block">
-        ${headerHtml}
-        ${capoNote}
-        ${bodyHtml}
-      </div>
-    `;
+  <div class="song-block">
+    ${headerHtml}
+    ${capoNote}
+    ${trumpetNote}
+    ${bodyHtml}
+  </div>
+`;
 
     blocks.push(songHtml);
     if (i !== songs.length - 1) blocks.push(`<div class="song-divider"></div>`);

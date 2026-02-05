@@ -195,6 +195,44 @@
 const MAJOR_KEYS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const FLAT_EQ={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
+// Prefer flats (for wind instruments like Bb trumpet)
+const SHARP_TO_FLAT = { 'C#':'Db', 'D#':'Eb', 'F#':'Gb', 'G#':'Ab', 'A#':'Bb' };
+
+function preferFlatsInChordToken(token){
+  // token examples: "A#", "F#m7", "G#/D#", "Bb", "C"
+  const parts = token.split('/');
+  const fixOne = (ch) => {
+    const m = ch.match(/^([A-G])([#b])?(.*)$/);
+    if(!m) return ch;
+    let [, r, a, rest] = m;
+    const full = r + (a || '');
+    if (SHARP_TO_FLAT[full]) return SHARP_TO_FLAT[full] + (rest || '');
+    return ch;
+  };
+  return parts.map(fixOne).join('/');
+}
+
+function preferFlatsInBracketedChords(text){
+  return text.replace(/\[([^\]]+)\]/g, (_, chordLine) => {
+    const converted = chordLine
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(preferFlatsInChordToken)
+      .join(' ');
+    return `[${converted}]`;
+  });
+}
+
+function preferFlatsInKeyLabel(keyStr){
+  // keyStr examples: "A#", "A#m", "C#", "F#m"
+  if(!keyStr) return keyStr;
+  const m = String(keyStr).trim().match(/^([A-G])([#b]?)(m?)$/i);
+  if(!m) return keyStr;
+  let root = m[1].toUpperCase() + (m[2] || '');
+  const minor = m[3] ? 'm' : '';
+  if (SHARP_TO_FLAT[root]) root = SHARP_TO_FLAT[root];
+  return root + minor;
+}
 
 const esc=s=>(s??'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -453,7 +491,14 @@ function renderHeaderService(headerText, metaFallback, serviceKey){
   const originalKey =
   getTagLine('key') || metaFallback?.key || '';
 
-  if (originalKey) pushMeta('Key', originalKey);
+  if (originalKey) {
+  const displayKey =
+    instrumentTranspose === 2
+      ? preferFlatsInKeyLabel(originalKey)
+      : originalKey;
+
+  pushMeta('Key', displayKey);
+}
 
   if(time) pushMeta('Time', time);
   if(tempo) pushMeta('Tempo', tempo);
@@ -752,6 +797,12 @@ if (instrumentTranspose === 2 && (serviceKey || originalKey)) {
 if (useNashville) {
   bodyT = applyNashville(bodyT, serviceKey || originalKey);
 }
+
+// 🎺 Prefer flats ONLY for Bb trumpet
+if (instrumentTranspose === 2) {
+  bodyT = preferFlatsInBracketedChords(bodyT);
+}
+
 
     const bodyHtml = parseChordProBody(bodyT);
 

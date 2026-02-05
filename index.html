@@ -808,7 +808,15 @@ const scaleIntervals = isMinorKey
 
   trumpetNote = `
     <div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
-      🎺 Trumpet scale (${trumpetKey}): ${scaleNotes}
+      const scaleLabel = isMinorKey ? 'natural minor' : 'major';
+
+trumpetNote = `
+  <div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
+    🎺 Trumpet scale (${preferFlats(trumpetKey)} ${scaleLabel}):
+    ${scaleNotes}
+  </div>
+`;
+ ${scaleNotes}
     </div>
   `;
 }

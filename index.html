@@ -195,6 +195,19 @@
 const MAJOR_KEYS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const FLAT_EQ={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
+// Display-only flat spellings (for trumpet scales)
+const SHARP_TO_FLAT_DISPLAY = {
+  'C#': 'Db',
+  'D#': 'Eb',
+  'F#': 'Gb',
+  'G#': 'Ab',
+  'A#': 'Bb'
+};
+
+function preferFlats(note){
+  return SHARP_TO_FLAT_DISPLAY[note] || note;
+}
+
 // Prefer flats (for wind instruments like Bb trumpet)
 const SHARP_TO_FLAT = { 'C#':'Db', 'D#':'Eb', 'F#':'Gb', 'G#':'Ab', 'A#':'Bb' };
 
@@ -780,7 +793,12 @@ if (instrumentTranspose === 2 && (serviceKey || originalKey)) {
     (NOTES.indexOf(normalizeKey(concertKey).replace(/m$/, '')) + 2) % 12;
   const trumpetKey = NOTES[trumpetKeyIndex];
 
-  const scaleIntervals = [0, 2, 4, 5, 7, 9, 11];
+  const isMinorKey = /m$/.test(concertKey);
+
+const scaleIntervals = isMinorKey
+  ? [0, 2, 3, 5, 7, 8, 10]   // Natural minor
+  : [0, 2, 4, 5, 7, 9, 11]; // Major
+
   const scaleNotes = scaleIntervals
   .map(i => `<span class="scale-note">${NOTES[(trumpetKeyIndex + i) % 12]}</span>`)
   .join('');

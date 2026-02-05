@@ -800,7 +800,10 @@ const scaleIntervals = isMinorKey
   : [0, 2, 4, 5, 7, 9, 11]; // Major
 
   const scaleNotes = scaleIntervals
-  .map(i => `<span class="scale-note">${NOTES[(trumpetKeyIndex + i) % 12]}</span>`)
+  .map(i => {
+    const note = NOTES[(trumpetKeyIndex + i) % 12];
+    return `<span class="scale-note">${preferFlats(note)}</span>`;
+  })
   .join('');
 
   trumpetNote = `

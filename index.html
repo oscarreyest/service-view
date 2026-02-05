@@ -787,39 +787,39 @@ metaFallback.__songIndex = i;
     }
     
 let trumpetNote = '';
+
 if (instrumentTranspose === 2 && (serviceKey || originalKey)) {
   const concertKey = serviceKey || originalKey;
+
+  const concertKeyNorm = normalizeKey(concertKey);
   const trumpetKeyIndex =
-    (NOTES.indexOf(normalizeKey(concertKey).replace(/m$/, '')) + 2) % 12;
+    (NOTES.indexOf(concertKeyNorm.replace(/m$/, '')) + 2) % 12;
+
   const trumpetKey = NOTES[trumpetKeyIndex];
 
-  const isMinorKey = /m$/.test(concertKey);
+  const isMinorKey = /m$/.test(concertKeyNorm);
+  const scaleLabel = isMinorKey ? 'natural minor' : 'major';
 
-const scaleIntervals = isMinorKey
-  ? [0, 2, 3, 5, 7, 8, 10]   // Natural minor
-  : [0, 2, 4, 5, 7, 9, 11]; // Major
+  const scaleIntervals = isMinorKey
+    ? [0, 2, 3, 5, 7, 8, 10]   // Natural minor
+    : [0, 2, 4, 5, 7, 9, 11]; // Major
 
   const scaleNotes = scaleIntervals
-  .map(i => {
-    const note = NOTES[(trumpetKeyIndex + i) % 12];
-    return `<span class="scale-note">${preferFlats(note)}</span>`;
-  })
-  .join('');
+    .map(i => {
+      const note = NOTES[(trumpetKeyIndex + i) % 12];
+      return `<span class="scale-note">${preferFlats(note)}</span>`;
+    })
+    .join('');
 
   trumpetNote = `
-    <div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
-      const scaleLabel = isMinorKey ? 'natural minor' : 'major';
-
-trumpetNote = `
-  <div class="meta-row" style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
-    🎺 Trumpet scale (${preferFlats(trumpetKey)} ${scaleLabel}):
-    ${scaleNotes}
-  </div>
-`;
- ${scaleNotes}
+    <div class="meta-row"
+         style="margin-top:4px;font-size:13px;color:#777;font-style:italic;">
+      🎺 Trumpet scale (${preferFlats(trumpetKey)} ${scaleLabel}):
+      ${scaleNotes}
     </div>
   `;
 }
+
 
     let bodyT = applyTransposeToText(body, effectiveSteps);
 

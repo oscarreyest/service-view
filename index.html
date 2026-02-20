@@ -65,7 +65,6 @@
 
   .viewer{background:#fff;border-radius:12px;padding:var(--viewer-pad);
     box-shadow:0 2px 6px rgba(0,0,0,.06)}
-  .viewer.two-col{column-count:2;column-gap:var(--column-gap);column-fill:auto}
 
   .header-box{border:1px solid #dce2ea;border-radius:12px;padding:14px 16px;margin-bottom:12px}
   .viewer > .header-box{-webkit-column-span:all;column-span:all;width:100%;box-sizing:border-box}
@@ -93,8 +92,29 @@
   .header-badge.type-solo{border-color:var(--solo-ac)}
   .header-badge.type-generic{border-color:var(--generic-ac)}
 
-  .song-block{margin-bottom:16px}
-  .song-divider{height:1px;background:#e7ebf2;margin:18px 0}
+  .song-block{
+  column-count:2;
+  column-gap:var(--column-gap);
+  column-fill:auto;
+  margin-bottom:30px;
+}
+
+/* Prevent sections from splitting awkwardly */
+.song-block .section-box{
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Make header span both columns INSIDE each song */
+.song-block .header-box{
+  -webkit-column-span: all;
+  column-span: all;
+}
+  .song-divider{
+  height:2px;
+  background:#d0d6e0;
+  margin:30px 0;
+}
 
   .section-box{margin:12px 0!important;border-radius:12px;border:1px solid #dce2ea;background:var(--generic-bg)}
   .section-box + .section-box{margin-top:14px!important}
@@ -140,8 +160,10 @@
   .comment.box{border-left:4px solid #ccc;background:#f8f8f8;padding:8px;border-radius:6px;font-style:normal;color:#333}
 
   @media (max-width: 600px){
-    .viewer{column-count:1!important;padding:12px!important}
+  .song-block{
+    column-count:1!important;
   }
+}
 
   @media print{
     body{margin:12mm;background:#fff}
@@ -149,7 +171,9 @@
     .viewer{box-shadow:none;padding:0}
     @page{size:Letter;margin:12mm}
     pre{line-height:1.25!important}
-    .viewer.two-col{column-gap:8mm!important}
+    .song-block{
+  column-gap:8mm!important;
+}
   }
   .scale-note {
   display: inline-block;
@@ -878,7 +902,6 @@ if (instrumentTranspose === 2) {
   });
 
   out.innerHTML = blocks.join('');
-  out.classList.add('two-col');
   
   // Safari reflow fix similar idea (prevents header weirdness)
   requestAnimationFrame(()=>{
